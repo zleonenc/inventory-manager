@@ -16,6 +16,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await getProducts();
       setProducts(data);
+      console.log(data);
     } catch (err) {
       console.error(err);
     }
