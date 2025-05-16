@@ -10,25 +10,34 @@ import java.util.Optional;
 
 @Service
 public class CategoryService {
-    private final CategoryRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryFileStorageService storageService;
 
-    public CategoryService(CategoryRepository productRepository) {
-        this.productRepository = productRepository;
+    public CategoryService(CategoryRepository categoryRepository, CategoryFileStorageService storageService) {
+        this.categoryRepository = categoryRepository;
+        this.storageService = storageService;
     }
 
-    public Category saveCategory(Category product) {
-        return productRepository.save(product);
+    public Category saveCategory(Category category) {
+        Category savedCategory = categoryRepository.save(category);
+        storageService.saveCategories(getAllCategories());
+        return savedCategory;
     }
 
-    public List<Category> getAllCategorys() {
-        return productRepository.findAll();
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
     }
 
     public Optional<Category> getCategoryById(Long id) {
-        return productRepository.findById(id);
+        return categoryRepository.findById(id);
     }
 
-    public boolean deleteCategory(Long id) {
-        return productRepository.deleteById(id);
+    public boolean deleteCategoryById(Long id) {
+        return categoryRepository.deleteById(id);
+    }
+
+    public void clearCategories() {
+        categoryRepository.clear();
+        storageService.clear();
     }
 }

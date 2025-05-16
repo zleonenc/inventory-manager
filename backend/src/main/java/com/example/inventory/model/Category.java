@@ -2,9 +2,18 @@ package com.example.inventory.model;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class Category {
     private Long id;
+
+    @NotBlank(message = "Name cannot be blank")
+    @Size(min = 1, max = 120, message = "Name must be between 1 and 120 characters")
     private String name;
+    
     private LocalDate creationDate = LocalDate.now();
     private LocalDate updateDate = LocalDate.now();
     private boolean active = true;

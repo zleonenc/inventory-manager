@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Repository
 public class CategoryRepository {
     private final Map<Long, Category> data = new HashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final AtomicLong idGenerator = new AtomicLong(0);
 
     public Category save(Category category){
         if (category.getId() == null){
