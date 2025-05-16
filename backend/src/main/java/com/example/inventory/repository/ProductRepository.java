@@ -55,4 +55,13 @@ public class ProductRepository {
     public void clear() {
         data.clear();
     }
+
+    public void loadProducts(List<Product> products) {
+        for (Product product : products) {
+            save(product);
+        }
+
+        Long maxId = data.keySet().stream().max(Long::compareTo).orElse(0L);
+        idGenerator.set(maxId);
+    }
 }

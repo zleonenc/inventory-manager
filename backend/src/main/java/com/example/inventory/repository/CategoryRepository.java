@@ -40,4 +40,13 @@ public class CategoryRepository {
     public void clear(){
         data.clear();
     }
+
+    public void loadCategories(List<Category> categories) {
+        for (Category category : categories) {
+            save(category);
+        }
+
+        Long maxId = data.keySet().stream().max(Long::compareTo).orElse(0L);
+        idGenerator.set(maxId);
+    }
 }

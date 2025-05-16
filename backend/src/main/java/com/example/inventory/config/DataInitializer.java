@@ -33,10 +33,10 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         List<Category> categories = categoryFileStorageService.loadCategories();
-        categories.forEach(categoryRepository::save);
+        categoryRepository.loadCategories(categories);
         
         List<Product> products = productFileStorageService.loadProducts();
-        products.forEach(productRepository::save);
+        productRepository.loadProducts(products);
 
         System.out.println("Loaded " + categories.size() + " categories and " + products.size() + " products.");
     }
