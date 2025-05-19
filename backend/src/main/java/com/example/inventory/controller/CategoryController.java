@@ -30,8 +30,8 @@ public class CategoryController {
 
     // Get all categories: GET
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    public ResponseEntity<List<Category>> getAllCategories(){
+        return ResponseEntity.ok(categoryService.getAllActiveCategories());
     }
 
     // Update a category: PUT
@@ -43,12 +43,8 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
 
-        Category existingCategory = existingCategoryOpt.get();
-        existingCategory.setName(category.getName());
-        existingCategory.setActive(category.getActive());
-
-        Category updated = categoryService.saveCategory(existingCategory);
-        return ResponseEntity.ok(updated);
+        Category updatedCategory = categoryService.updateCategory(id, category);
+        return ResponseEntity.ok(updatedCategory);
     }
 
     // Mark a category as inactive: DELETE
@@ -60,9 +56,7 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
 
-        Category existingCategory = existingCategoryOpt.get();
-        existingCategory.setActive(false);
-        categoryService.saveCategory(existingCategory);
+        categoryService.deleteCategoryById(id);
 
         return ResponseEntity.noContent().build();
     }

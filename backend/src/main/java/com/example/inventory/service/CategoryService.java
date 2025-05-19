@@ -5,6 +5,7 @@ import com.example.inventory.repository.CategoryRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +21,14 @@ public class CategoryService {
 
     public Category saveCategory(Category category) {
         Category savedCategory = categoryRepository.save(category);
-        storageService.saveCategories(getAllCategories());
+        storageService.saveCategories(getAllActiveCategories());
         return savedCategory;
+    }
+
+    public List<Category> getAllActiveCategories() {
+        return categoryRepository.findAll().stream()
+                .filter(Category::getActive)
+                .toList();
     }
 
     public List<Category> getAllCategories() {
@@ -29,11 +36,35 @@ public class CategoryService {
     }
 
     public Optional<Category> getCategoryById(Long id) {
-        return categoryRepository.findById(id);
+        return categoryRepository.findById(id)
+            .filter(Category::getActive);
     }
 
-    public boolean deleteCategoryById(Long id) {
-        return categoryRepository.deleteById(id);
+    public Category updateCategory(Long id, Category category) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+
+        if (!existingCategory.getActive()) {
+            throw new IllegalArgumentException("Category does not exist");
+        }
+
+        existingCategory.setName(category.getName());
+        existingCategory.setUpdateDate(LocalDate.now());
+
+        Category updatedCategory = categoryRepository.save(existingCategory);
+        storageService.saveCategories(getAllActiveCategories());
+        return updatedCategory;
+    }
+
+    public void deleteCategoryById(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+
+        if (!category.getActive()) {
+            throw new IllegalArgumentException("Category does not exist");
+        }else{
+            category.setActive(false);
+            storageService.saveCategories(getAllCategories());
+        }
     }
 
     public void clearCategories() {

@@ -7,6 +7,7 @@ import com.example.inventory.model.Category;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -104,7 +105,11 @@ public class ProductService {
     }
 
     public void deleteProductById(Long id) {
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+        
+        product.setActive(false); // Mark the product as inactive
+        productRepository.save(product);
         storageService.saveProducts(getAllProducts());
     }
 
@@ -120,6 +125,7 @@ public class ProductService {
         existingProduct.setPrice(productDTO.getPrice());
         existingProduct.setStock(productDTO.getStock());
         existingProduct.setExpirationDate(productDTO.getExpirationDate());
+        existingProduct.setUpdateDate(LocalDate.now());
 
         storageService.saveProducts(getAllProducts());
         return productRepository.save(existingProduct);

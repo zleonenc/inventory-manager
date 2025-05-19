@@ -23,7 +23,7 @@ public class ProductDTO {
 
     @FutureOrPresent(message = "Expiration date must be in the present or future")
     private LocalDate expirationDate;
-
+    
     private boolean active = true;
 
     public ProductDTO() {
