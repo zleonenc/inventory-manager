@@ -36,20 +36,14 @@ public class ProductRepository {
 
     public Optional<Product> findById(Long id) {
         Product product = data.get(id);
-        if (product != null && product.isActive()) {
+        if (product != null) {
             return Optional.of(product);
         }
         return Optional.empty();
     }
 
     public List<Product> getAll() {
-        return data.values().stream().filter(Product::isActive).collect(Collectors.toList());
-    }
-
-    public List<Product> findByCategoryId(Long categoryId) {
-        return data.values().stream()
-                .filter(p -> p.isActive() && p.getCategory() != null && p.getCategory().getId().equals(categoryId))
-                .collect(Collectors.toList());
+        return data.values().stream().collect(Collectors.toList());
     }
 
     public void clear() {

@@ -26,13 +26,13 @@ public class CategoryService {
     }
 
     public List<Category> getAllActiveCategories() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.getAll().stream()
                 .filter(Category::getActive)
                 .toList();
     }
 
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.getAll();
     }
 
     public Optional<Category> getCategoryById(Long id) {
@@ -52,7 +52,7 @@ public class CategoryService {
         existingCategory.setUpdateDate(LocalDate.now());
 
         Category updatedCategory = categoryRepository.save(existingCategory);
-        storageService.saveCategories(getAllActiveCategories());
+        storageService.saveCategories(getAllCategories());
         return updatedCategory;
     }
 

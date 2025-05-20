@@ -33,7 +33,7 @@ public class CategoryRepository {
         return Optional.ofNullable(data.get(id));
     }
 
-    public List<Category> findAll(){
+    public List<Category> getAll(){
         return new ArrayList<>(data.values());
     }
 
