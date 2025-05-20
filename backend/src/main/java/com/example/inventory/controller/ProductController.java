@@ -4,6 +4,7 @@ import com.example.inventory.model.Product;
 import com.example.inventory.dto.InventoryMetricsDTO;
 import com.example.inventory.dto.ProductDTO;
 import com.example.inventory.service.ProductService;
+import com.example.inventory.dto.PagedResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,6 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/products")
 @Validated
@@ -33,7 +33,7 @@ public class ProductController {
 
     // Get all products: GET
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts(
+    public ResponseEntity<?> getAllProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) String available,
@@ -42,8 +42,10 @@ public class ProductController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
 
-        List<Product> products = productService.getFilteredProducts(name, categories, available, page, size, sortBy, sortDirection);
-        return ResponseEntity.ok(products);
+        PagedResponse<Product> response = productService.getFilteredProducts(
+            name, categories, available, page, size, sortBy, sortDirection
+        );
+        return ResponseEntity.ok(response);
     }
 
     // Update a product: PUT
@@ -90,7 +92,6 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
-    // Mark a product as inactive: DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         Optional<Product> existingProductOpt = productService.getProductById(id);
@@ -100,10 +101,8 @@ public class ProductController {
         }
 
         productService.deleteProductById(id);
-
         return ResponseEntity.noContent().build();
     }
-    
     // Clear all products: DELETE
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clearProducts() {

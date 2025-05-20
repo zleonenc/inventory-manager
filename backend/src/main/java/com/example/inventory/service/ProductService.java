@@ -5,6 +5,7 @@ import com.example.inventory.repository.ProductRepository;
 import com.example.inventory.dto.InventoryMetricsDTO;
 import com.example.inventory.dto.ProductDTO;
 import com.example.inventory.model.Category;
+import com.example.inventory.dto.PagedResponse;
 
 import org.springframework.stereotype.Service;
 
@@ -56,49 +57,55 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public List<Product> getFilteredProducts(String name, List<Long> categories, String available, int page, int size, String sortBy, String sortDirection) {
-        List<Product> products = productRepository.getAll();
+    public PagedResponse<Product> getFilteredProducts(
+            String name, List<Long> categories, String available,
+            int page, int size, String sortBy, String sortDirection) {
 
-        products = products.stream()
+        List<Product> filtered = productRepository.getAll().stream()
             .filter(Product::isActive)
             .filter(p -> 
-            (name == null || p.getName().toLowerCase().contains(name.toLowerCase())) &&
-            (categories == null || categories.isEmpty() || 
-                (p.getCategory() != null && categories.contains(p.getCategory().getId()))) &&
-            (available == null || 
-                ("instock".equalsIgnoreCase(available) && p.getStock() > 0) || 
-                ("outofstock".equalsIgnoreCase(available) && p.getStock() == 0)))
+                (name == null || p.getName().toLowerCase().contains(name.toLowerCase())) &&
+                (categories == null || categories.isEmpty() || 
+                    (p.getCategory() != null && categories.contains(p.getCategory().getId()))) &&
+                (available == null || available.isEmpty() || 
+                    ("instock".equalsIgnoreCase(available) && p.getStock() > 0) || 
+                    ("outofstock".equalsIgnoreCase(available) && p.getStock() == 0)))
             .sorted((p1, p2) -> {
-            if ("name".equalsIgnoreCase(sortBy)) {
-            return "asc".equalsIgnoreCase(sortDirection) 
-                ? p1.getName().compareTo(p2.getName()) 
-                : p2.getName().compareTo(p1.getName());
-            } else if ("price".equalsIgnoreCase(sortBy)) {
-            return "asc".equalsIgnoreCase(sortDirection) 
-                ? Double.compare(p1.getPrice(), p2.getPrice()) 
-                : Double.compare(p2.getPrice(), p1.getPrice());
-            } else if ("category".equalsIgnoreCase(sortBy)) {
-            String category1 = p1.getCategory() != null ? p1.getCategory().getName() : "";
-            String category2 = p2.getCategory() != null ? p2.getCategory().getName() : "";
-            return "asc".equalsIgnoreCase(sortDirection) 
-                ? category1.compareTo(category2) 
-                : category2.compareTo(category1);
-            } else if ("stock".equalsIgnoreCase(sortBy)) {
-            return "asc".equalsIgnoreCase(sortDirection) 
-                ? Double.compare(p1.getStock(), p2.getStock()) 
-                : Double.compare(p2.getStock(), p1.getStock());
-            } else if ("expirationdate".equalsIgnoreCase(sortBy)) {
-            return "asc".equalsIgnoreCase(sortDirection) 
-                ? p1.getExpirationDate().compareTo(p2.getExpirationDate()) 
-                : p2.getExpirationDate().compareTo(p1.getExpirationDate());
-            }
-            return 0;
+                if ("name".equalsIgnoreCase(sortBy)) {
+                    return "asc".equalsIgnoreCase(sortDirection) 
+                        ? p1.getName().compareTo(p2.getName()) 
+                        : p2.getName().compareTo(p1.getName());
+                } else if ("price".equalsIgnoreCase(sortBy)) {
+                    return "asc".equalsIgnoreCase(sortDirection) 
+                        ? Double.compare(p1.getPrice(), p2.getPrice()) 
+                        : Double.compare(p2.getPrice(), p1.getPrice());
+                } else if ("category".equalsIgnoreCase(sortBy)) {
+                    String category1 = p1.getCategory() != null ? p1.getCategory().getName() : "";
+                    String category2 = p2.getCategory() != null ? p2.getCategory().getName() : "";
+                    return "asc".equalsIgnoreCase(sortDirection) 
+                        ? category1.compareTo(category2) 
+                        : category2.compareTo(category1);
+                } else if ("stock".equalsIgnoreCase(sortBy)) {
+                    return "asc".equalsIgnoreCase(sortDirection) 
+                        ? Double.compare(p1.getStock(), p2.getStock()) 
+                        : Double.compare(p2.getStock(), p1.getStock());
+                } else if ("expirationdate".equalsIgnoreCase(sortBy)) {
+                    return "asc".equalsIgnoreCase(sortDirection) 
+                        ? p1.getExpirationDate().compareTo(p2.getExpirationDate()) 
+                        : p2.getExpirationDate().compareTo(p1.getExpirationDate());
+                }
+                return 0;
             })
+            .collect(Collectors.toList());
+
+        long totalElements = filtered.size();
+
+        List<Product> paged = filtered.stream()
             .skip(page * size)
             .limit(size)
             .collect(Collectors.toList());
-        
-        return products;
+
+        return new PagedResponse<>(paged, totalElements);
     }
 
     public Optional<Product> getProductById(Long id) {
