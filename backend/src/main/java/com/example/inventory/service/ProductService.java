@@ -2,6 +2,7 @@ package com.example.inventory.service;
 
 import com.example.inventory.model.Product;
 import com.example.inventory.repository.ProductRepository;
+import com.example.inventory.dto.InventoryMetricsDTO;
 import com.example.inventory.dto.ProductDTO;
 import com.example.inventory.model.Category;
 
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -48,7 +51,9 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        return productRepository.getAll();
+        return productRepository.getAll().stream()
+                .filter(Product::isActive)
+                .collect(Collectors.toList());
     }
 
     public List<Product> getFilteredProducts(String name, List<Long> categories, String available, int page, int size, String sortBy, String sortDirection) {
@@ -97,16 +102,31 @@ public class ProductService {
     }
 
     public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+        Optional<Product> product = productRepository.findById(id);
+        if (product.isPresent() && product.get().isActive()) {
+            return product;
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<Product> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId);
+        List<Product> products = productRepository.getAll();
+        return products.stream()
+                .filter(Product::isActive)
+                .filter(p -> p.getCategory() != null && p.getCategory().getId().equals(categoryId))
+                .collect(Collectors.toList());
+
     }
 
     public void deleteProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+        Optional<Product> productOptional = productRepository.findById(id);
+
+        if (productOptional.isEmpty() || !productOptional.get().isActive()) {
+            throw new IllegalArgumentException("Product not found with ID: " + id);
+        }
+
+        Product product = productOptional.get();
         
         product.setActive(false); // Mark the product as inactive
         productRepository.save(product);
@@ -150,5 +170,55 @@ public class ProductService {
     public void clear() {
         productRepository.clear();
         storageService.clear();
+    }
+
+    public List<InventoryMetricsDTO> getInventoryMetrics() {
+        List<Product> allProducts = getAllProducts().stream()
+                .filter(p -> p.getStock() > 0)
+                .collect(Collectors.toList());
+
+        Map<String, List<Product>> groupedByCategory = allProducts.stream()
+        .collect(Collectors.groupingBy(p -> p.getCategory().getName()));
+
+        List<InventoryMetricsDTO> metrics = new ArrayList<>();
+
+        for (Map.Entry<String, List<Product>> entry : groupedByCategory.entrySet()) {
+            String categoryName = entry.getKey();
+            List<Product> productsInCategory = entry.getValue();
+
+            double totalStock = productsInCategory.stream()
+                    .mapToDouble(Product::getStock)
+                    .sum();
+
+            double totalValue = productsInCategory.stream()
+                    .mapToDouble(p -> p.getPrice() * p.getStock())
+                    .sum();
+
+            double averagePrice = productsInCategory.stream()
+                    .mapToDouble(Product::getPrice)
+                    .average()
+                    .orElse(0.0);
+
+            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryName, totalStock, totalValue, averagePrice);
+            metrics.add(metric);
+        }
+
+        // Overall metrics
+        double overallTotalStock = allProducts.stream()
+                .mapToDouble(Product::getStock)
+                .sum();
+        double overallTotalValue = allProducts.stream()
+                .mapToDouble(p -> p.getPrice() * p.getStock())
+                .sum();
+        double overallAveragePrice = allProducts.stream()
+                .mapToDouble(Product::getPrice)
+                .average()
+                .orElse(0.0);
+        
+        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO("Overall", overallTotalStock, overallTotalValue, overallAveragePrice);
+        
+        metrics.add(overallMetrics);
+
+        return metrics;
     }
 }
