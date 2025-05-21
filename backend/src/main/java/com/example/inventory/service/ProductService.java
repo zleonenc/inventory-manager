@@ -90,8 +90,11 @@ public class ProductService {
                         ? Double.compare(p1.getStock(), p2.getStock()) 
                         : Double.compare(p2.getStock(), p1.getStock());
                 } else if ("expirationdate".equalsIgnoreCase(sortBy)) {
-                    return "asc".equalsIgnoreCase(sortDirection) 
-                        ? p1.getExpirationDate().compareTo(p2.getExpirationDate()) 
+                    if (p1.getExpirationDate() == null && p2.getExpirationDate() == null) return 0;
+                    if (p1.getExpirationDate() == null) return "asc".equalsIgnoreCase(sortDirection) ? 1 : -1;
+                    if (p2.getExpirationDate() == null) return "asc".equalsIgnoreCase(sortDirection) ? -1 : 1;
+                    return "asc".equalsIgnoreCase(sortDirection)
+                        ? p1.getExpirationDate().compareTo(p2.getExpirationDate())
                         : p2.getExpirationDate().compareTo(p1.getExpirationDate());
                 }
                 return 0;

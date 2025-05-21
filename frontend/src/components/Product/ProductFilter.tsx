@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useProductContext } from "../context/ProductContext";
-import { useCategoryContext } from "../context/CategoryContext";
+import { useProductContext } from "../../context/ProductContext";
+import { useCategoryContext } from "../../context/CategoryContext";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";

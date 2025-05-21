@@ -1,4 +1,5 @@
 import { Product } from "../types/Product";
+import { ProductDTO } from "../types/ProductDTO";
 
 const API_URL = "http://localhost:9090/api/products";
 
@@ -14,7 +15,7 @@ export const getProducts = async (params: Record<string, any> = {}): Promise<Pro
     return response.json();
   };
 
-export const createProduct = async (product: Partial<Product>): Promise<Product> => {
+export const createProduct = async (product: ProductDTO): Promise<any> => {
   const response = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -26,7 +27,7 @@ export const createProduct = async (product: Partial<Product>): Promise<Product>
   return response.json();
 };
 
-export const updateProduct = async (id: number, product: Partial<Product>): Promise<Product> => {
+export const updateProduct = async (id: number, product: ProductDTO): Promise<any> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

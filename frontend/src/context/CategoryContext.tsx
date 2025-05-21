@@ -1,14 +1,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "../services/categoryService";
 import { Category } from "../types/Category";
+import { CategoryDTO } from "../types/CategoryDTO";
 
 interface CategoryContextType {
   categories: Category[];
   loading: boolean;
   error: string | null;
   fetchCategories: () => void;
-  addCategory: (category: Partial<Category>) => Promise<void>;
-  editCategory: (id: number, category: Partial<Category>) => Promise<void>;
+  addCategory: (category: CategoryDTO) => Promise<void>;
+  editCategory: (id: number, category: CategoryDTO) => Promise<void>;
   removeCategory: (id: number) => Promise<void>;
 }
 
@@ -33,33 +34,33 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addCategory = async (category: Partial<Category>) => {
+const addCategory = async (categoryDTO: CategoryDTO) => {
     setLoading(true);
     setError(null);
     try {
-      await createCategory(category);
-      await fetchCategories();
+        await createCategory(categoryDTO);
+        await fetchCategories();
     } catch (err) {
-      setError("Failed to add category");
-      console.error(err);
+        setError("Failed to add category");
+        console.error(err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
-  const editCategory = async (id: number, category: Partial<Category>) => {
+const editCategory = async (id: number, categoryDTO: CategoryDTO) => {
     setLoading(true);
     setError(null);
     try {
-      await updateCategory(id, category);
-      await fetchCategories();
+        await updateCategory(id, categoryDTO);
+        await fetchCategories();
     } catch (err) {
-      setError("Failed to update category");
-      console.error(err);
+        setError("Failed to update category");
+        console.error(err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const removeCategory = async (id: number) => {
     setLoading(true);

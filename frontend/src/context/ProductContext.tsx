@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { getProducts, getInventoryMetrics, ProductPagedResponse } from "../services/productService";
+import { getProducts, getInventoryMetrics, createProduct as apiCreateProduct, updateProduct as apiUpdateProduct, setProductInStock as apiSetProductInStock, setProductOutOfStock as apiSetProductOutOfStock, deleteProduct as apiDeleteProduct} from "../services/productService";
 import { Product } from "../types/Product";
 import { Metric } from "../types/Metric";
+import { ProductDTO } from "../types/ProductDTO";
 
 interface ProductContextType {
   products: Product[];
   total: number;
   fetchProducts: (params?: Record<string, any>) => Promise<void>;
+  createProduct: (product: ProductDTO) => Promise<void>;
+  updateProduct: (id: number, product: ProductDTO) => Promise<void>;
+  setProductInStock: (id: number) => Promise<void>;
+  setProductOutOfStock: (id: number) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
   loading: boolean;
   error: string | null;
   metrics: Metric[];
@@ -37,6 +43,76 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const createProduct = async (product: ProductDTO) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiCreateProduct(product);
+      await fetchProducts();
+    } catch (err) {
+      setError("Failed to create product");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProduct = async (id: number, product: ProductDTO) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiUpdateProduct(id, product);
+      await fetchProducts();
+    } catch (err) {
+      setError("Failed to update product");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setProductInStock = async (id: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiSetProductInStock(id);
+      await fetchProducts();
+    } catch (err) {
+      setError("Failed to set product in stock");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setProductOutOfStock = async (id: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiSetProductOutOfStock(id);
+      await fetchProducts();
+    } catch (err) {
+      setError("Failed to set product out of stock");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (id: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiDeleteProduct(id);
+      await fetchProducts();
+    } catch (err) {
+      setError("Failed to delete product");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchMetrics = async () => {
     try {
       const data = await getInventoryMetrics();
@@ -57,6 +133,11 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         products,
         total,
         fetchProducts,
+        createProduct,
+        updateProduct,
+        setProductInStock,
+        setProductOutOfStock,
+        deleteProduct,
         loading,
         error,
         metrics,
