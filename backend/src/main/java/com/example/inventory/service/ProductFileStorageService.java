@@ -1,20 +1,24 @@
 package com.example.inventory.service;
 
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.example.inventory.config.JacksonConfig;
-import com.example.inventory.model.Product;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.example.inventory.config.JacksonConfig;
+import com.example.inventory.model.Product;
 
 @Service
 public class ProductFileStorageService {
     private final ObjectMapper objectMapper = new JacksonConfig().objectMapper();
     private final Path filePath = Paths.get("./backend/src/main/resources/products.json");
-    //private final Path filePath = Paths.get("./src/main/resources/products.json");
+    /*
+     * private final Path filePath =
+     * Paths.get("./src/main/resources/products.json");
+     */
 
     public void saveProducts(List<Product> products) {
         try {
@@ -27,7 +31,8 @@ public class ProductFileStorageService {
     public List<Product> loadProducts() {
         try {
             if (filePath.toFile().exists()) {
-                return objectMapper.readValue(filePath.toFile(), objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
+                return objectMapper.readValue(filePath.toFile(),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class));
             } else {
                 return List.of(); // Return an empty list if the file does not exist
             }

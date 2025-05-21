@@ -2,14 +2,14 @@ package com.example.inventory.repository;
 
 import org.springframework.stereotype.Repository;
 
-import com.example.inventory.model.Product;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+
+import com.example.inventory.model.Product;
 
 @Repository
 public class ProductRepository {
@@ -24,11 +24,10 @@ public class ProductRepository {
         return product;
     }
 
-    // 
     public boolean deleteById(Long id) {
         Product product = data.get(id);
         if (product != null) {
-            product.setActive(false); // Mark the product as inactive
+            product.setActive(false); // Soft delete
             return true;
         }
         return false;

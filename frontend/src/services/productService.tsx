@@ -41,7 +41,7 @@ export const updateProduct = async (id: number, product: ProductDTO): Promise<an
 
 export const setProductInStock = async (id: number): Promise<Product> => {
     const response = await fetch(`${API_URL}/${id}/instock`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
@@ -52,7 +52,7 @@ export const setProductInStock = async (id: number): Promise<Product> => {
 
 export const setProductOutOfStock = async (id: number): Promise<Product> => {
     const response = await fetch(`${API_URL}/${id}/outofstock`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {

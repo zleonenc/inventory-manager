@@ -1,6 +1,5 @@
-import { useProductContext } from "../../context/ProductContext";
-import { useCategoryContext } from "../../context/CategoryContext";
 import { useState } from "react";
+
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
@@ -15,11 +14,17 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+
+import { useProductContext } from "../../context/ProductContext";
+import { useCategoryContext } from "../../context/CategoryContext";
 import { ProductDTO } from "../../types/ProductDTO";
+import CreateCategory from "../Category/CreateCategory";
 
 const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     const { createProduct, fetchProducts } = useProductContext();
-    const { categories } = useCategoryContext();
+    const { categories, fetchCategories } = useCategoryContext();
 
     const [name, setName] = useState("");
     const [categoryId, setCategoryId] = useState<number | "">(
@@ -29,7 +34,9 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
     const [price, setPrice] = useState<number | "">("");
     const [expirationDate, setExpirationDate] = useState<string>("");
     const [formError, setFormError] = useState<string | null>(null);
-    const [successAlert, setSuccessAlert] = useState(false); // State for success alert
+    const [successAlert, setSuccessAlert] = useState(false);
+    const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+    const [newCategoryId, setNewCategoryId] = useState<number | null>(null);
 
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
@@ -76,6 +83,23 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
         onClose();
     };
 
+    const handleCategoryChange = (e: any) => {
+        const value = e.target.value;
+        if (value === "__create__") {
+            setCreateCategoryOpen(true);
+        } else {
+            setCategoryId(value);
+            setTouched(t => ({ ...t, categoryId: true }));
+        }
+    };
+
+    const handleCategoryCreated = async (newCatId: number) => {
+        await fetchProducts();
+        await fetchCategories();
+        setCategoryId(newCatId);
+        setCreateCategoryOpen(false);
+    };
+
     return (
         <>
             <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
@@ -110,7 +134,7 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
                             <Select
                                 labelId="category-label"
                                 value={categoryId}
-                                onChange={e => setCategoryId(e.target.value as number)}
+                                onChange={handleCategoryChange}
                                 onBlur={() => setTouched(t => ({ ...t, categoryId: true }))}
                                 input={<OutlinedInput label="Category" />}
                             >
@@ -122,6 +146,9 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
                                         {cat.name}
                                     </MenuItem>
                                 ))}
+                                <MenuItem value="__create__" sx={{ fontStyle: "italic", color: "primary.main" }}>
+                                    + Create new category
+                                </MenuItem>
                             </Select>
                             {touched.categoryId && !categoryId && (
                                 <Box sx={{ color: "error.main", fontSize: 12, mt: 0.5, ml: 2 }}>
@@ -170,14 +197,22 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
                             type="date"
                             value={expirationDate}
                             onChange={e => setExpirationDate(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
+                            slotProps={{ inputLabel: { shrink: true } }}
                             fullWidth
                         />
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="contained" onClick={handleSave}>Save</Button>
-                    <Button variant="outlined" onClick={handleCancel}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleSave}
+                        startIcon={<SaveIcon />}
+                    >Save</Button>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCancel}
+                        startIcon={<CancelIcon />}
+                    >Cancel</Button>
                 </DialogActions>
             </Dialog>
             <Snackbar
@@ -190,6 +225,11 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
                     Product created successfully!
                 </Alert>
             </Snackbar>
+            <CreateCategory
+                open={createCategoryOpen}
+                onClose={() => setCreateCategoryOpen(false)}
+                onCreated={handleCategoryCreated}
+            />
         </>
     );
 };

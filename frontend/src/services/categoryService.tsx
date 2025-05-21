@@ -1,7 +1,7 @@
 import { Category } from "../types/Category";
 import { CategoryDTO } from "../types/CategoryDTO";
 
-const API_URL = "http://localhost:9090/api/categories";
+export const API_URL = "http://localhost:9090/api/categories";
 
 export const getCategories = async (): Promise<Category[]> => {
     const response = await fetch(API_URL);

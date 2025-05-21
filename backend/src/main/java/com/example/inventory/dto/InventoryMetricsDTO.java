@@ -16,7 +16,6 @@ public class InventoryMetricsDTO {
         this.averagePrice = averagePrice;
     }
 
-
     public String getCategoryName() {
         return this.categoryName;
     }

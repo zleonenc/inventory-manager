@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useProductContext } from "../../context/ProductContext";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -9,8 +9,6 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
-import EditProduct from "./EditProduct";
-import { Product } from "../../types/Product";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -19,8 +17,25 @@ import Typography from "@mui/material/Typography";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import styles from "./ProductTable.module.css";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Pagination from "@mui/material/Pagination";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import CancelIcon from "@mui/icons-material/Cancel";
 import dayjs from "dayjs";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Box from "@mui/material/Box";
+
+import { useProductContext } from "../../context/ProductContext";
+import EditProduct from "./EditProduct";
+import { Product } from "../../types/Product";
+import styles from "./ProductTable.module.css";
 
 const DEFAULT_ROWS_PER_PAGE = 10;
 
@@ -32,13 +47,13 @@ const getRowBgColor = (expirationDate: string | null | undefined) => {
     const diff = expiration.diff(today, "day");
 
     if (diff < 7) {
-        return "#ffcccb";
+        return "#F6D4D2";
     }
     if (diff < 15) {
-        return "#fff3cd";
+        return "#FFFFBF";
     }
     if (diff >= 15) {
-        return "#d1ecf1";
+        return "#E4FAE4";
     }
 }
 
@@ -47,15 +62,15 @@ const getStockCellColor = (stock: number) => {
         return "white";
     }
     if (stock >= 5) {
-        return "#FFD580";
+        return "#FFB343";
     }
     if (stock < 5) {
-        return "#ffcccb";
+        return "#ffb09c";
     }
 };
 
 const ProductTable = () => {
-    const { products, total, fetchProducts, deleteProduct } = useProductContext();
+    const { products, total, fetchProducts, deleteProduct, setProductInStock, setProductOutOfStock } = useProductContext();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
     const [editOpen, setEditOpen] = useState(false);
@@ -73,12 +88,8 @@ const ProductTable = () => {
         fetchProducts({ page, size: rowsPerPage, sortBy, sortDirection });
     }, [page, rowsPerPage, sortBy, sortDirection]);
 
-    const handleChangePage = (_event: unknown, newPage: number) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+    const handleChangeRowsPerPage = (event: any) => {
+        setRowsPerPage(Number(event.target.value));
         setPage(0);
     };
 
@@ -87,14 +98,12 @@ const ProductTable = () => {
         setEditOpen(true);
     };
 
-    // Open the dialog and set the product to delete
     const handleDeleteClick = (product: Product) => {
         setProductToDelete(product);
         setDeleteDialogOpen(true);
     };
 
-    // Confirm delete
-    const handleConfirmDelete = async () => {
+    const handleDeleteConfirm = async () => {
         if (productToDelete) {
             await deleteProduct(productToDelete.id);
             fetchProducts({ page, size: rowsPerPage });
@@ -104,8 +113,7 @@ const ProductTable = () => {
         setProductToDelete(null);
     };
 
-    // Cancel delete
-    const handleCancelDelete = () => {
+    const handleDeleteCancel = () => {
         setDeleteDialogOpen(false);
         setProductToDelete(null);
     };
@@ -125,7 +133,7 @@ const ProductTable = () => {
                 <Table stickyHeader className={styles.productTable}>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: "gray" }}>
-                        <TableCell className={styles.headerCell}>
+                            <TableCell className={styles.headerCell}>
                                 <TableSortLabel
                                     active={sortBy === "category"}
                                     direction={sortBy === "category" ? sortDirection : "asc"}
@@ -133,7 +141,7 @@ const ProductTable = () => {
                                         <span>
                                             {sortBy === "category" && sortDirection === "asc" && "▲"}
                                             {sortBy === "category" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "category" && "▲▼"} 
+                                            {sortBy !== "category" && "▲▼"}
                                         </span>
                                     )
                                     }
@@ -206,6 +214,7 @@ const ProductTable = () => {
                                     Stock
                                 </TableSortLabel>
                             </TableCell>
+                            <TableCell className={styles.headerCell}>Toggle Stock</TableCell>
                             <TableCell className={styles.headerCell}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -241,24 +250,50 @@ const ProductTable = () => {
                                             {product.expirationDate || "N/A"}
                                         </span>
                                     </TableCell>
-                                    <TableCell sx={{ backgroundColor: stockCellColor }}>
-                                        <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
+                                    <TableCell>
+                                        <span
+                                            style={{
+                                                display: "inline-block",
+                                                padding: "5px 10px",
+                                                borderRadius: "5px",
+                                                ...isOutOfStock ? { textDecoration: "line-through" } : {},
+                                                backgroundColor: stockCellColor,
+                                                color: "black",
+                                            }}
+                                        >
                                             {product.stock}
                                         </span>
                                     </TableCell>
                                     <TableCell>
+                                        <Tooltip title={product.stock === 0 ? "Restore Default Stock" : "Set Out of Stock"}>
+                                            <IconButton
+                                                size="small"
+                                                color={product.stock === 0 ? "success" : "warning"}
+                                                onClick={() =>
+                                                    product.stock === 0
+                                                        ? setProductInStock(product.id)
+                                                        : setProductOutOfStock(product.id)
+                                                }
+                                            >
+                                                {product.stock === 0 ? <CheckCircleIcon /> : <RemoveCircleIcon />}
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell>
                                         <Button
                                             size="small"
-                                            variant="outlined"
+                                            variant="contained"
                                             sx={{ mr: 1 }}
+                                            startIcon={<EditIcon />}
                                             onClick={() => handleEdit(product)}
                                         >
                                             Edit
                                         </Button>
                                         <Button
                                             size="small"
-                                            variant="outlined"
+                                            variant="contained"
                                             color="error"
+                                            startIcon={<DeleteIcon />}
                                             onClick={() => handleDeleteClick(product)}
                                         >
                                             Delete
@@ -269,19 +304,49 @@ const ProductTable = () => {
                         })}
                     </TableBody>
                 </Table>
-                <TablePagination
-                    component="div"
-                    count={total}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    rowsPerPageOptions={[5, 10, 25, 50]}
+                <Box
                     sx={{
                         display: "flex",
-                        justifyContent: "center",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 2,
+                        mb: 1,
+                        mt: 1,
                     }}
-                />
+                >
+                    <Box sx={{ flex: 1 }} />
+
+                    <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+                        <Pagination
+                            count={Math.ceil(total / rowsPerPage)}
+                            page={page + 1}
+                            onChange={(_e, value) => setPage(value - 1)}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                            size="medium"
+                            shape="rounded"
+                        />
+                    </Box>
+
+                    <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end", pr: 2 }}>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                            <Select
+                                labelId="rows-per-page-label"
+                                value={rowsPerPage}
+                                label="Rows per page"
+                                onChange={handleChangeRowsPerPage}
+                            >
+                                {[5, 10, 25, 50].map((size) => (
+                                    <MenuItem key={size} value={size}>
+                                        {size}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                </Box>
             </TableContainer>
             <EditProduct
                 open={editOpen}
@@ -290,7 +355,7 @@ const ProductTable = () => {
             />
 
             {/* Delete Confirmation Dialog */}
-            <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+            <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
                 <DialogTitle>Delete Product</DialogTitle>
                 <DialogContent>
                     <Typography>
@@ -299,10 +364,19 @@ const ProductTable = () => {
                     </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCancelDelete} variant="outlined">
+                    <Button
+                        onClick={handleDeleteCancel}
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleConfirmDelete} color="error" variant="contained">
+                    <Button
+                        onClick={handleDeleteConfirm}
+                        color="error"
+                        variant="contained"
+                        startIcon={<DeleteIcon />}
+                    >
                         Delete
                     </Button>
                 </DialogActions>

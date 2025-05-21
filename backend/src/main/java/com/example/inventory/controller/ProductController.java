@@ -1,29 +1,38 @@
 package com.example.inventory.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
+
 import com.example.inventory.model.Product;
 import com.example.inventory.dto.InventoryMetricsDTO;
 import com.example.inventory.dto.ProductDTO;
 import com.example.inventory.service.ProductService;
 import com.example.inventory.dto.PagedResponse;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
-
-import java.util.List;
-import java.util.Optional;
 @RestController
 @RequestMapping("/api/products")
 @Validated
 public class ProductController {
     private final ProductService productService;
 
-
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
+
     // Create a product: POST
     @PostMapping()
     public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductDTO productDTO) {
@@ -43,8 +52,7 @@ public class ProductController {
             @RequestParam(defaultValue = "asc") String sortDirection) {
 
         PagedResponse<Product> response = productService.getFilteredProducts(
-            name, categories, available, page, size, sortBy, sortDirection
-        );
+                name, categories, available, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(response);
     }
 
@@ -62,7 +70,7 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
-    //Mark product as outofstock
+    // Mark product as outofstock
     // @PUT outofstock
     @RequestMapping(value = "/{id}/outofstock", method = RequestMethod.POST)
     public ResponseEntity<Product> markProductAsOutOfStock(@PathVariable Long id) {
@@ -103,6 +111,7 @@ public class ProductController {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
+
     // Clear all products: DELETE
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clearProducts() {

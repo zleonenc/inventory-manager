@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+
 import { getCategories, createCategory, updateCategory, deleteCategory } from "../services/categoryService";
 import { Category } from "../types/Category";
 import { CategoryDTO } from "../types/CategoryDTO";
@@ -8,7 +9,7 @@ interface CategoryContextType {
     loading: boolean;
     error: string | null;
     fetchCategories: () => void;
-    addCategory: (category: CategoryDTO) => Promise<void>;
+    addCategory: (category: CategoryDTO) => Promise<Category>;
     editCategory: (id: number, category: CategoryDTO) => Promise<void>;
     removeCategory: (id: number) => Promise<void>;
 }
@@ -34,15 +35,17 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const addCategory = async (categoryDTO: CategoryDTO) => {
+    const addCategory = async (categoryDTO: CategoryDTO): Promise<Category> => {
         setLoading(true);
         setError(null);
         try {
-            await createCategory(categoryDTO);
+            const newCategory = await createCategory(categoryDTO)
             await fetchCategories();
+            return newCategory;
         } catch (err) {
             setError("Failed to add category");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }

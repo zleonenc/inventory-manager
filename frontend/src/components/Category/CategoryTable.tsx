@@ -1,5 +1,5 @@
-import { useCategoryContext } from "../../context/CategoryContext";
 import { useState } from "react";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -12,39 +12,34 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+import styles from "../Product/ProductTable.module.css";
+import EditCategory from "./EditCategory";
+import { Category } from "../../types/Category";
+import { useCategoryContext } from "../../context/CategoryContext";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 const CategoryTable = () => {
     const { categories, editCategory, removeCategory } = useCategoryContext();
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [editName, setEditName] = useState("");
 
-    // Open edit dialog
-    const handleEdit = (category: { id: number; name: string }) => {
+    const handleEdit = (category: Category) => {
         setSelectedCategory(category);
         setEditName(category.name);
         setEditOpen(true);
     };
 
-    // Open delete dialog
-    const handleDelete = (category: { id: number; name: string }) => {
+    const handleDeleteClick = (category: Category) => {
         setSelectedCategory(category);
         setDeleteOpen(true);
     };
 
-    // Confirm edit
-    const handleEditSave = async () => {
-        if (selectedCategory && editName.trim()) {
-            await editCategory(selectedCategory.id, { name: editName.trim() });
-        }
-        setEditOpen(false);
-        setSelectedCategory(null);
-    };
-
-    // Confirm delete
     const handleDeleteConfirm = async () => {
         if (selectedCategory) {
             await removeCategory(selectedCategory.id);
@@ -53,11 +48,6 @@ const CategoryTable = () => {
         setSelectedCategory(null);
     };
 
-    // Cancel dialogs
-    const handleEditCancel = () => {
-        setEditOpen(false);
-        setSelectedCategory(null);
-    };
     const handleDeleteCancel = () => {
         setDeleteOpen(false);
         setSelectedCategory(null);
@@ -69,8 +59,8 @@ const CategoryTable = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Category Name</TableCell>
-                            <TableCell align="right">Actions</TableCell>
+                            <TableCell className={styles.headerCell}>Category Name</TableCell>
+                            <TableCell className={styles.headerCell} align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -80,17 +70,19 @@ const CategoryTable = () => {
                                 <TableCell align="right">
                                     <Button
                                         size="small"
-                                        variant="outlined"
+                                        variant="contained"
                                         sx={{ mr: 1 }}
+                                        startIcon={<EditIcon />}
                                         onClick={() => handleEdit(cat)}
                                     >
                                         Edit
                                     </Button>
                                     <Button
                                         size="small"
-                                        variant="outlined"
+                                        variant="contained"
                                         color="error"
-                                        onClick={() => handleDelete(cat)}
+                                        startIcon={<DeleteIcon />}
+                                        onClick={() => handleDeleteClick(cat)}
                                     >
                                         Delete
                                     </Button>
@@ -100,31 +92,12 @@ const CategoryTable = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <EditCategory
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+                category={selectedCategory}
+            />
 
-            {/* Edit Dialog */}
-            <Dialog open={editOpen} onClose={handleEditCancel}>
-                <DialogTitle>Edit Category</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        label="Category Name"
-                        value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                        fullWidth
-                        autoFocus
-                        sx={{ mt: 2 }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleEditCancel} variant="outlined">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleEditSave} variant="contained" disabled={!editName.trim()}>
-                        Save
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Delete Dialog */}
             <Dialog open={deleteOpen} onClose={handleDeleteCancel}>
                 <DialogTitle>Delete Category</DialogTitle>
                 <DialogContent>
@@ -134,10 +107,19 @@ const CategoryTable = () => {
                     </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleDeleteCancel} variant="outlined">
+                    <Button
+                        onClick={handleDeleteCancel}
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                    <Button
+                        onClick={handleDeleteConfirm}
+                        color="error"
+                        variant="contained"
+                        startIcon={<DeleteIcon />}
+                    >
                         Delete
                     </Button>
                 </DialogActions>

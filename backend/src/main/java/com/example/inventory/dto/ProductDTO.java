@@ -1,11 +1,11 @@
 package com.example.inventory.dto;
 
-import java.time.LocalDate;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.FutureOrPresent;
+
+import java.time.LocalDate;
 
 public class ProductDTO {
     @NotBlank(message = "Name cannot be blank")
@@ -21,9 +21,12 @@ public class ProductDTO {
     @PositiveOrZero(message = "Category ID must be positive or zero")
     private Long categoryId;
 
-    @FutureOrPresent(message = "Expiration date must be in the present or future")
+    /*
+     * @FutureOrPresent(message = "Expiration date must be in the present or
+     * future")
+     */
     private LocalDate expirationDate;
-    
+
     private boolean active = true;
 
     public ProductDTO() {
@@ -36,7 +39,6 @@ public class ProductDTO {
         this.categoryId = categoryId;
         this.expirationDate = expirationDate;
     }
-
 
     public String getName() {
         return this.name;

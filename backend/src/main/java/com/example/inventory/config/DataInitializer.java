@@ -1,17 +1,16 @@
 package com.example.inventory.config;
 
-import com.example.inventory.model.Category;
-import com.example.inventory.service.CategoryFileStorageService;
-import com.example.inventory.repository.CategoryRepository;
-
-import com.example.inventory.model.Product;
-import com.example.inventory.service.ProductFileStorageService;
-import com.example.inventory.repository.ProductRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import com.example.inventory.model.Category;
+import com.example.inventory.service.CategoryFileStorageService;
+import com.example.inventory.repository.CategoryRepository;
+import com.example.inventory.model.Product;
+import com.example.inventory.service.ProductFileStorageService;
+import com.example.inventory.repository.ProductRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -22,8 +21,8 @@ public class DataInitializer implements CommandLineRunner {
     private final CategoryFileStorageService categoryFileStorageService;
 
     public DataInitializer(ProductRepository productRepository, CategoryRepository categoryRepository,
-                           ProductFileStorageService productFileStorageService,
-                           CategoryFileStorageService categoryFileStorageService) {
+            ProductFileStorageService productFileStorageService,
+            CategoryFileStorageService categoryFileStorageService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productFileStorageService = productFileStorageService;
@@ -34,11 +33,10 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         List<Category> categories = categoryFileStorageService.loadCategories();
         categoryRepository.loadCategories(categories);
-        
+
         List<Product> products = productFileStorageService.loadProducts();
         productRepository.loadProducts(products);
 
         System.out.println("Loaded " + categories.size() + " categories and " + products.size() + " products.");
     }
 }
-

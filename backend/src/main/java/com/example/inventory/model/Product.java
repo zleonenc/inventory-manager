@@ -1,16 +1,16 @@
 package com.example.inventory.model;
 
-import java.time.LocalDate;
-
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.time.LocalDate;
+
 public class Product {
     private Long id;
-    
+
     @NotBlank(message = "Name cannot be blank")
     @Size(min = 1, max = 120, message = "Name must be between 1 and 120 characters")
     private String name;
@@ -26,7 +26,10 @@ public class Product {
     private LocalDate creationDate = LocalDate.now();
     private LocalDate updateDate = LocalDate.now();
 
-    @FutureOrPresent(message = "Expiration date must be in the present or future")
+    /*
+     * @FutureOrPresent(message =
+     * "Expiration date must be in the present or future")
+     */
     private LocalDate expirationDate;
     private boolean active = true;
 

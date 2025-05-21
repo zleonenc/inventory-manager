@@ -8,16 +8,21 @@ import org.springframework.lang.NonNull;
 
 @Configuration
 public class CorsConfig {
-    
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
-            
-            @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry){
-                registry.addMapping("/**").allowedOrigins("http://localhost:8080").allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*").allowCredentials(true);
-            }
 
+            @Override
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
+                /*
+                 * .allowedOrigins("http://localhost:8080") to restrict only to localhost
+                 * frontend
+                 */
+                registry.addMapping("/**").allowedOriginPatterns("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*").allowCredentials(true);
+            }
         };
     }
 }
