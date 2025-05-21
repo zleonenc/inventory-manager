@@ -14,6 +14,7 @@ import com.example.inventory.config.JacksonConfig;
 public class CategoryFileStorageService {
     private final ObjectMapper objectMapper = new JacksonConfig().objectMapper();
     private final Path filePath = Paths.get("./backend/src/main/resources/categories.json");
+    //private final Path filePath = Paths.get("./src/main/resources/categories.json");
 
     public void saveCategories(List<Category> categories) {
         try {

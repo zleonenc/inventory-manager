@@ -1,17 +1,26 @@
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ProductProvider } from "./context/ProductContext";
-import ProductList from "./pages/ProductList";
+import { CategoryProvider } from "./context/CategoryContext";
+import ProductPage from "./pages/ProductPage";
+import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
+
+const theme = createTheme();
 
 const App = () => {
-  return (
-    <ProductProvider>
-      <Router>
-        <Routes>
-          <Route path="/products" element={<ProductList/>}/>
-        </Routes>
-      </Router>
-    </ProductProvider>
-  )
-}
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <CategoryProvider>
+                <ProductProvider>
+                    <Router>
+                        <Routes>
+                            <Route path="/" element={<ProductPage />} />
+                        </Routes>
+                    </Router>
+                </ProductProvider>
+            </CategoryProvider>
+        </ThemeProvider>
+    );
+};
 
 export default App;

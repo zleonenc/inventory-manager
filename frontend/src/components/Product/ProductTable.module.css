@@ -1,0 +1,15 @@
+.headerCell {
+    background-color: #e0e0e0 !important;
+    font-weight: bold;
+    /*border: 1px solid #000 !important;  */
+}
+
+.productTable {
+    width: 100%;
+}
+
+/*
+.productTable td, .productTable th {
+    border: 1px solid #ccc;
+}
+*/

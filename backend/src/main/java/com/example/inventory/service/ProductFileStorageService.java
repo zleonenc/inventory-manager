@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ProductFileStorageService {
     private final ObjectMapper objectMapper = new JacksonConfig().objectMapper();
     private final Path filePath = Paths.get("./backend/src/main/resources/products.json");
+    //private final Path filePath = Paths.get("./src/main/resources/products.json");
 
     public void saveProducts(List<Product> products) {
         try {
