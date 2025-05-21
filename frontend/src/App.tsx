@@ -7,20 +7,20 @@ import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 const theme = createTheme();
 
 const App = () => {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <CategoryProvider>
-        <ProductProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<ProductPage />} />
-            </Routes>
-          </Router>
-        </ProductProvider>
-      </CategoryProvider>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <CategoryProvider>
+                <ProductProvider>
+                    <Router>
+                        <Routes>
+                            <Route path="/" element={<ProductPage />} />
+                        </Routes>
+                    </Router>
+                </ProductProvider>
+            </CategoryProvider>
+        </ThemeProvider>
+    );
 };
 
 export default App;

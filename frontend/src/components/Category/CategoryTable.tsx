@@ -16,134 +16,134 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 const CategoryTable = () => {
-  const { categories, editCategory, removeCategory } = useCategoryContext();
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
-  const [editName, setEditName] = useState("");
+    const { categories, editCategory, removeCategory } = useCategoryContext();
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
+    const [editName, setEditName] = useState("");
 
-  // Open edit dialog
-  const handleEdit = (category: { id: number; name: string }) => {
-    setSelectedCategory(category);
-    setEditName(category.name);
-    setEditOpen(true);
-  };
+    // Open edit dialog
+    const handleEdit = (category: { id: number; name: string }) => {
+        setSelectedCategory(category);
+        setEditName(category.name);
+        setEditOpen(true);
+    };
 
-  // Open delete dialog
-  const handleDelete = (category: { id: number; name: string }) => {
-    setSelectedCategory(category);
-    setDeleteOpen(true);
-  };
+    // Open delete dialog
+    const handleDelete = (category: { id: number; name: string }) => {
+        setSelectedCategory(category);
+        setDeleteOpen(true);
+    };
 
-  // Confirm edit
-  const handleEditSave = async () => {
-    if (selectedCategory && editName.trim()) {
-      await editCategory(selectedCategory.id, { name: editName.trim() });
-    }
-    setEditOpen(false);
-    setSelectedCategory(null);
-  };
+    // Confirm edit
+    const handleEditSave = async () => {
+        if (selectedCategory && editName.trim()) {
+            await editCategory(selectedCategory.id, { name: editName.trim() });
+        }
+        setEditOpen(false);
+        setSelectedCategory(null);
+    };
 
-  // Confirm delete
-  const handleDeleteConfirm = async () => {
-    if (selectedCategory) {
-      await removeCategory(selectedCategory.id);
-    }
-    setDeleteOpen(false);
-    setSelectedCategory(null);
-  };
+    // Confirm delete
+    const handleDeleteConfirm = async () => {
+        if (selectedCategory) {
+            await removeCategory(selectedCategory.id);
+        }
+        setDeleteOpen(false);
+        setSelectedCategory(null);
+    };
 
-  // Cancel dialogs
-  const handleEditCancel = () => {
-    setEditOpen(false);
-    setSelectedCategory(null);
-  };
-  const handleDeleteCancel = () => {
-    setDeleteOpen(false);
-    setSelectedCategory(null);
-  };
+    // Cancel dialogs
+    const handleEditCancel = () => {
+        setEditOpen(false);
+        setSelectedCategory(null);
+    };
+    const handleDeleteCancel = () => {
+        setDeleteOpen(false);
+        setSelectedCategory(null);
+    };
 
-  return (
-    <>
-      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Category Name</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {categories.map((cat) => (
-              <TableRow key={cat.id}>
-                <TableCell>{cat.name}</TableCell>
-                <TableCell align="right">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    sx={{ mr: 1 }}
-                    onClick={() => handleEdit(cat)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDelete(cat)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    return (
+        <>
+            <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Category Name</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {categories.map((cat) => (
+                            <TableRow key={cat.id}>
+                                <TableCell>{cat.name}</TableCell>
+                                <TableCell align="right">
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ mr: 1 }}
+                                        onClick={() => handleEdit(cat)}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color="error"
+                                        onClick={() => handleDelete(cat)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
-      {/* Edit Dialog */}
-      <Dialog open={editOpen} onClose={handleEditCancel}>
-        <DialogTitle>Edit Category</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Category Name"
-            value={editName}
-            onChange={e => setEditName(e.target.value)}
-            fullWidth
-            autoFocus
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditCancel} variant="outlined">
-            Cancel
-          </Button>
-          <Button onClick={handleEditSave} variant="contained" disabled={!editName.trim()}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {/* Edit Dialog */}
+            <Dialog open={editOpen} onClose={handleEditCancel}>
+                <DialogTitle>Edit Category</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Category Name"
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        fullWidth
+                        autoFocus
+                        sx={{ mt: 2 }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleEditCancel} variant="outlined">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleEditSave} variant="contained" disabled={!editName.trim()}>
+                        Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-      {/* Delete Dialog */}
-      <Dialog open={deleteOpen} onClose={handleDeleteCancel}>
-        <DialogTitle>Delete Category</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete{" "}
-            <b>{selectedCategory?.name}</b>?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel} variant="outlined">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
+            {/* Delete Dialog */}
+            <Dialog open={deleteOpen} onClose={handleDeleteCancel}>
+                <DialogTitle>Delete Category</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to delete{" "}
+                        <b>{selectedCategory?.name}</b>?
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteCancel} variant="outlined">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    );
 };
 
 export default CategoryTable;

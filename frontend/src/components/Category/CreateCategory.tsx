@@ -7,58 +7,75 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const CreateCategory = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const { addCategory } = useCategoryContext();
-  const [name, setName] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
-  const [touched, setTouched] = useState(false);
+    const { addCategory } = useCategoryContext();
+    const [name, setName] = useState("");
+    const [formError, setFormError] = useState<string | null>(null);
+    const [touched, setTouched] = useState(false);
+    const [successAlert, setSuccessAlert] = useState(false);
 
-  const handleSave = async () => {
-    setTouched(true);
-    if (!name.trim()) {
-      setFormError("Category name is required.");
-      return;
-    }
-    setFormError(null);
-    await addCategory({ name: name.trim() });
-    handleCancel();
-  };
+    const handleSave = async () => {
+        setTouched(true);
+        if (!name.trim()) {
+            setFormError("Category name is required.");
+            return;
+        }
+        setFormError(null);
+        await addCategory({ name: name.trim() });
+        setSuccessAlert(true);
+        handleCancel();
+    };
 
-  const handleCancel = () => {
-    setName("");
-    setFormError(null);
-    setTouched(false);
-    onClose();
-  };
+    const handleCancel = () => {
+        setName("");
+        setFormError(null);
+        setTouched(false);
+        onClose();
+    };
 
-  return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="xs" fullWidth>
-      <DialogTitle>Create Category</DialogTitle>
-      <DialogContent>
-        {formError && <Alert severity="warning" sx={{ mb: 2 }}>{formError}</Alert>}
-        <TextField
-          label={
-            <span>
-              Name <span style={{ color: "red" }}>*</span>
-            </span>
-          }
-          value={name}
-          onChange={e => setName(e.target.value)}
-          onBlur={() => setTouched(true)}
-          error={touched && !name.trim()}
-          helperText={touched && !name.trim() ? "Name is required" : ""}
-          fullWidth
-          autoFocus
-          sx={{ mt: 2 }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button variant="contained" onClick={handleSave}>Save</Button>
-        <Button variant="outlined" onClick={handleCancel}>Cancel</Button>
-      </DialogActions>
-    </Dialog>
-  );
+    return (
+        <>
+
+            <Dialog open={open} onClose={handleCancel} maxWidth="xs" fullWidth>
+                <DialogTitle>Create Category</DialogTitle>
+                <DialogContent>
+                    {formError && <Alert severity="warning" sx={{ mb: 2 }}>{formError}</Alert>}
+                    <TextField
+                        label={
+                            <span>
+                                Name <span style={{ color: "red" }}>*</span>
+                            </span>
+                        }
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        onBlur={() => setTouched(true)}
+                        error={touched && !name.trim()}
+                        helperText={touched && !name.trim() ? "Name is required" : ""}
+                        fullWidth
+                        autoFocus
+                        sx={{ mt: 2 }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="contained" onClick={handleSave}>Save</Button>
+                    <Button variant="outlined" onClick={handleCancel}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
+            <Snackbar
+                open={successAlert}
+                autoHideDuration={3000}
+                onClose={() => setSuccessAlert(false)}
+                message="Category created successfully!"
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+                <Alert onClose={() => setSuccessAlert(false)} severity="success" sx={{ width: '100%' }}>
+                    Category created successfully!
+                </Alert>
+            </Snackbar>
+        </>
+    );
 };
 
 export default CreateCategory;
