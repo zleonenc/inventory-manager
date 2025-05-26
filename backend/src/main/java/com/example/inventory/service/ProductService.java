@@ -141,7 +141,7 @@ public class ProductService {
         Product product = productOptional.get();
 
         product.setActive(false); // Soft delete
-        productRepository.save(product);
+        productRepository.updateById(id, product);
         storageService.saveProducts(getAllProducts());
     }
 
@@ -169,7 +169,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.setStock(0);
-        productRepository.save(product);
+        productRepository.updateById(id, product);
         storageService.saveProducts(getAllProducts());
     }
 
@@ -177,7 +177,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.setStock(DEFAULT_RESTOCK);
-        productRepository.save(product);
+        productRepository.updateById(id, product);
         storageService.saveProducts(getAllProducts());
     }
 
