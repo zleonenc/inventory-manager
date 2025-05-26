@@ -36,7 +36,6 @@ const CreateProduct = ({ open, onClose }: { open: boolean; onClose: () => void }
     const [formError, setFormError] = useState<string | null>(null);
     const [successAlert, setSuccessAlert] = useState(false);
     const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
-    const [newCategoryId, setNewCategoryId] = useState<number | null>(null);
 
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 

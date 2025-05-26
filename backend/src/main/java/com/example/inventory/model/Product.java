@@ -1,10 +1,10 @@
 package com.example.inventory.model;
 
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+//import jakarta.validation.constraints.FutureOrPresent;
 
 import java.time.LocalDate;
 

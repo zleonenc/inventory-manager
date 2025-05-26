@@ -37,7 +37,7 @@ public class CategoryController {
 
     // Get all categories: GET
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
+    public ResponseEntity<List<Category>> getAllActiveCategories() {
         return ResponseEntity.ok(categoryService.getAllActiveCategories());
     }
 
@@ -50,7 +50,7 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
 
-        Category updatedCategory = categoryService.updateCategory(id, category);
+        Category updatedCategory = categoryService.updateCategoryById(id, category);
         return ResponseEntity.ok(updatedCategory);
     }
 

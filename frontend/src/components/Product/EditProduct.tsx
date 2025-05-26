@@ -43,9 +43,7 @@ const EditProduct = ({ open, onClose, product }: EditProductProps) => {
     const [successAlert, setSuccessAlert] = useState(false);
 
     const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
-    const [newCategoryId, setNewCategoryId] = useState<number | null>(null);
 
-    // Populate form fields when product changes
     useEffect(() => {
         if (product) {
             setName(product.name || "");

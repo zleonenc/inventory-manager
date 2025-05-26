@@ -16,11 +16,18 @@ public class CategoryRepository {
     private final Map<Long, Category> data = new HashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
 
+    public CategoryRepository() {
+    }
+
     public Category save(Category category) {
-        if (category.getId() == null) {
-            category.setId(idGenerator.incrementAndGet());
-        }
+        category.setId(idGenerator.incrementAndGet());
         data.put(category.getId(), category);
+        return category;
+    }
+
+    public Category updateById(Long id, Category category) {
+        category.setId(id);
+        data.put(id, category);
         return category;
     }
 
@@ -47,5 +54,9 @@ public class CategoryRepository {
 
         Long maxId = data.keySet().stream().max(Long::compareTo).orElse(0L);
         idGenerator.set(maxId);
+    }
+
+    public AtomicLong getIdGenerator() {
+        return idGenerator;
     }
 }

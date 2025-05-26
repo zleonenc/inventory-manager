@@ -1,8 +1,0 @@
-{
-    "scripts": {
-        "start": "concurrently \"npm run start --prefix frontend\" \"mvn spring-boot:run --file backend/pom.xml\""
-    },
-    "devDependencies": {
-        "concurrently": "^9.1.2"
-    }
-}

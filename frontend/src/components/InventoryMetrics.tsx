@@ -9,13 +9,6 @@ import Paper from "@mui/material/Paper";
 import { useProductContext } from "../context/ProductContext";
 import styles from "./Product/ProductTable.module.css";
 
-type Metric = {
-    categoryName: string;
-    totalStock: number;
-    totalValue: number;
-    averagePrice: number;
-};
-
 const InventoryMetrics = () => {
     const { metrics } = useProductContext();
 

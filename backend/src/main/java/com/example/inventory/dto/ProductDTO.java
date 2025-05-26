@@ -3,7 +3,7 @@ package com.example.inventory.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.FutureOrPresent;
+//import jakarta.validation.constraints.FutureOrPresent;
 
 import java.time.LocalDate;
 

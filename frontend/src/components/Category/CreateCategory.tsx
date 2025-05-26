@@ -41,6 +41,7 @@ const CreateCategory = ({ open, onClose, onCreated }: { open: boolean; onClose: 
         if (onCreated && newCat && newCat.id) {
             onCreated(newCat.id);
         }
+        handleCancel();
     };
 
     const handleCancel = () => {

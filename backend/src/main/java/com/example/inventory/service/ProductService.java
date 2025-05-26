@@ -35,7 +35,6 @@ public class ProductService {
         Category category = categoryService.getCategoryById(productDTO.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
         Product product = new Product(
-                null,
                 productDTO.getName(),
                 category,
                 productDTO.getPrice(),
@@ -146,7 +145,7 @@ public class ProductService {
         storageService.saveProducts(getAllProducts());
     }
 
-    public Product updateProduct(Long id, ProductDTO productDTO) {
+    public Product updateProductById(Long id, ProductDTO productDTO) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
 
@@ -160,8 +159,10 @@ public class ProductService {
         existingProduct.setExpirationDate(productDTO.getExpirationDate());
         existingProduct.setUpdateDate(LocalDate.now());
 
+        Product updatedProduct = productRepository.updateById(id, existingProduct);
         storageService.saveProducts(getAllProducts());
-        return productRepository.save(existingProduct);
+        
+        return updatedProduct;
     }
 
     public void markProductAsOutOfStock(Long id) {
@@ -180,7 +181,7 @@ public class ProductService {
         storageService.saveProducts(getAllProducts());
     }
 
-    public void clear() {
+    public void clearProducts() {
         productRepository.clear();
         storageService.clear();
     }

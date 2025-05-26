@@ -40,9 +40,9 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    // Get all products: GET
+    // Get filtered products: GET
     @GetMapping
-    public ResponseEntity<?> getAllProducts(
+    public ResponseEntity<PagedResponse<Product>> getFilteredProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) String available,
@@ -65,7 +65,7 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
 
-        Product updatedProduct = productService.updateProduct(id, dto);
+        Product updatedProduct = productService.updateProductById(id, dto);
 
         return ResponseEntity.ok(updatedProduct);
     }
@@ -115,7 +115,7 @@ public class ProductController {
     // Clear all products: DELETE
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clearProducts() {
-        productService.clear();
+        productService.clearProducts();
         return ResponseEntity.noContent().build();
     }
 

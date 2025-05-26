@@ -45,7 +45,7 @@ public class CategoryService {
                 .filter(Category::getActive);
     }
 
-    public Category updateCategory(Long id, Category category) {
+    public Category updateCategoryById(Long id, Category category) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
 
@@ -62,7 +62,7 @@ public class CategoryService {
         existingCategory.setName(category.getName());
         existingCategory.setUpdateDate(LocalDate.now());
 
-        Category updatedCategory = categoryRepository.save(existingCategory);
+        Category updatedCategory = categoryRepository.updateById(id, existingCategory);
         storageService.saveCategories(getAllCategories());
         return updatedCategory;
     }
