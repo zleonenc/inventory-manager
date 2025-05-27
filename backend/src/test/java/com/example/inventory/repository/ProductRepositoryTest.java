@@ -133,7 +133,7 @@ class ProductRepositoryTest {
         assertTrue(allProducts.contains(product2));
         assertEquals("Product A", allProducts.get(0).getName());
         assertEquals("Product B", allProducts.get(1).getName());
-        
+
         assertEquals(2L, repository.getIdGenerator().get());
     }
 }

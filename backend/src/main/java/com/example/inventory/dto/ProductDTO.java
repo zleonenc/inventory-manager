@@ -3,7 +3,6 @@ package com.example.inventory.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.PositiveOrZero;
-//import jakarta.validation.constraints.FutureOrPresent;
 
 import java.time.LocalDate;
 
@@ -21,10 +20,6 @@ public class ProductDTO {
     @PositiveOrZero(message = "Category ID must be positive or zero")
     private Long categoryId;
 
-    /*
-     * @FutureOrPresent(message = "Expiration date must be in the present or
-     * future")
-     */
     private LocalDate expirationDate;
 
     private boolean active = true;

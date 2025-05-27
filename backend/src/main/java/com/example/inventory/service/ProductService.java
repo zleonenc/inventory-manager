@@ -161,7 +161,7 @@ public class ProductService {
 
         Product updatedProduct = productRepository.updateById(id, existingProduct);
         storageService.saveProducts(getAllProducts());
-        
+
         return updatedProduct;
     }
 

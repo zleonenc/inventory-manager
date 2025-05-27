@@ -21,7 +21,7 @@ interface EditCategoryProps {
 }
 
 const EditCategory = ({ open, onClose, category }: EditCategoryProps) => {
-    const { editCategory, categories } = useCategoryContext(); // <-- add categories
+    const { editCategory, categories } = useCategoryContext();
     const [name, setName] = useState("");
     const [formError, setFormError] = useState<string | null>(null);
     const [touched, setTouched] = useState(false);

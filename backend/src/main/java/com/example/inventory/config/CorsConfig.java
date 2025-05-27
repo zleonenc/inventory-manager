@@ -15,10 +15,6 @@ public class CorsConfig {
 
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
-                /*
-                 * .allowedOrigins("http://localhost:8080") to restrict only to localhost
-                 * frontend
-                 */
                 registry.addMapping("/**").allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*").allowCredentials(true);

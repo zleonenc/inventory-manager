@@ -25,7 +25,7 @@ class CategoryRepositoryTest {
     void save_Category_returnsSavedCategory() {
         Category category = new Category("Category A");
         Category saved = repository.save(category);
-      
+
         assertNotNull(saved);
         assertEquals(1L, saved.getId());
         assertEquals("Category A", saved.getName());
@@ -106,7 +106,7 @@ class CategoryRepositoryTest {
         repository.loadCategories(List.of(category1, category2));
 
         List<Category> allCategories = repository.getAll();
-        
+
         assertEquals(2, allCategories.size());
         assertTrue(allCategories.contains(category1));
         assertTrue(allCategories.contains(category2));

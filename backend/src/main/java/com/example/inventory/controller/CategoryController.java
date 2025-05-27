@@ -35,7 +35,7 @@ public class CategoryController {
         return ResponseEntity.ok(saved);
     }
 
-    // Get all categories: GET
+    // Get all active categories: GET
     @GetMapping
     public ResponseEntity<List<Category>> getAllActiveCategories() {
         return ResponseEntity.ok(categoryService.getAllActiveCategories());

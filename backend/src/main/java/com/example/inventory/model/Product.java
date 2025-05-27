@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-//import jakarta.validation.constraints.FutureOrPresent;
 
 import java.time.LocalDate;
 
@@ -25,11 +24,6 @@ public class Product {
     private double stock;
     private LocalDate creationDate = LocalDate.now();
     private LocalDate updateDate = LocalDate.now();
-
-    /*
-     * @FutureOrPresent(message =
-     * "Expiration date must be in the present or future")
-     */
     private LocalDate expirationDate;
     private boolean active = true;
 

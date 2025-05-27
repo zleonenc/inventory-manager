@@ -8,7 +8,7 @@ test('renders ProductTable headers', () => {
     render(
         <ProductProvider>
             <CategoryProvider>
-            <ProductTable />
+                <ProductTable />
             </CategoryProvider>
         </ProductProvider>
     );

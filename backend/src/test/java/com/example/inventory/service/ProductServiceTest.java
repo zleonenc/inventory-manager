@@ -119,7 +119,7 @@ class ProductServiceTest {
         service.deleteProductById(1L);
 
         assertFalse(product.isActive());
-        verify(repository).save(product);
+        repository.updateById(eq(1L), eq(product));
         verify(storageService).saveProducts(any());
     }
 
@@ -198,7 +198,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void markProductAsOutOfStock_setsStockToZero_andSaves() {
+    void markProductAsOutOfStock_setsStockToZeroAndSaves() {
         Product product = new Product();
         product.setId(1L);
         product.setActive(true);
@@ -209,7 +209,7 @@ class ProductServiceTest {
         service.markProductAsOutOfStock(1L);
 
         assertEquals(0, product.getStock());
-        verify(repository).save(product);
+        repository.updateById(eq(1L), eq(product));
         verify(storageService).saveProducts(any());
     }
 
@@ -222,7 +222,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void markProductAsInStock_setsStockToOne_andSaves() {
+    void markProductAsInStock_setsStockToOneAndSaves() {
         Product product = new Product();
         product.setId(1L);
         product.setActive(true);
@@ -233,7 +233,7 @@ class ProductServiceTest {
         service.markProductAsInStock(1L);
 
         assertEquals(DEFAULT_RESTOCK, product.getStock());
-        verify(repository).save(product);
+        repository.updateById(eq(1L), eq(product));
         verify(storageService).saveProducts(any());
     }
 

@@ -14,6 +14,14 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryFileStorageService storageService;
 
+    public CategoryService() {
+        this(new CategoryRepository(), new CategoryFileStorageService());
+    }
+
+    public CategoryService(CategoryRepository categoryRepository) {
+        this(categoryRepository, new CategoryFileStorageService());
+    }
+
     public CategoryService(CategoryRepository categoryRepository, CategoryFileStorageService storageService) {
         this.categoryRepository = categoryRepository;
         this.storageService = storageService;

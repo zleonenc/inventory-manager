@@ -74,7 +74,7 @@ class CategoryServiceTest {
         Category result = service.updateCategoryById(1L, updated);
         assertEquals("Category B", result.getName());
         verify(repository).findById(1L);
-       
+
         ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
         verify(repository).updateById(eq(1L), captor.capture());
         Category passedToRepository = captor.getValue();
@@ -107,7 +107,7 @@ class CategoryServiceTest {
         Category existing = new Category(1L, "Category A");
 
         when(repository.findById(1L)).thenReturn(Optional.of(existing));
-        
+
         service.deleteCategoryById(1L);
 
         assertFalse(existing.getActive());
@@ -142,10 +142,10 @@ class CategoryServiceTest {
 
     @Test
     void getAll_returnsAllCategories() {
-        Category  category1 = new Category(1L, "Category A");
-        Category  category2 = new Category(2L, "Category B");
-        
-        when(repository.getAll()).thenReturn(List.of( category1,  category2));
+        Category category1 = new Category(1L, "Category A");
+        Category category2 = new Category(2L, "Category B");
+
+        when(repository.getAll()).thenReturn(List.of(category1, category2));
 
         List<Category> allCategories = service.getAllCategories();
         assertEquals(2, allCategories.size());

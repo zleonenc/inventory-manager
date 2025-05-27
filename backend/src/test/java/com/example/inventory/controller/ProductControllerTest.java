@@ -51,34 +51,32 @@ class ProductControllerTest {
         verify(service).saveFromDTO(dto);
     }
 
-@Test
-void getFilteredProducts_returnsPagedResponse() {
-    Product product1 = new Product(1L, "Product A", new Category(1L, "Category A"), 1.0, 1, LocalDate.now());
-    Product product2 = new Product(2L, "Product B", new Category(2L, "Category B"), 2.0, 2, LocalDate.now());
-    List<Product> products = List.of(product1, product2);
-    PagedResponse<Product> paged = new PagedResponse<>(products, 2);
+    @Test
+    void getFilteredProducts_returnsPagedResponse() {
+        Product product1 = new Product(1L, "Product A", new Category(1L, "Category A"), 1.0, 1, LocalDate.now());
+        Product product2 = new Product(2L, "Product B", new Category(2L, "Category B"), 2.0, 2, LocalDate.now());
+        List<Product> products = List.of(product1, product2);
+        PagedResponse<Product> paged = new PagedResponse<>(products, 2);
 
-    when(service.getFilteredProducts(
-            any(), any(), any(), anyInt(), anyInt(), any(), any()
-    )).thenReturn(paged);
+        when(service.getFilteredProducts(
+                any(), any(), any(), anyInt(), anyInt(), any(), any())).thenReturn(paged);
 
-    ResponseEntity<PagedResponse<Product>> response = controller.getFilteredProducts(
-        null, // name
-        null, // categories
-        null, // available
-        0,    // page
-        10,   // size
-        null, // sortBy
-        null  // sortDirection
-    );
+        ResponseEntity<PagedResponse<Product>> response = controller.getFilteredProducts(
+                null, // name
+                null, // categories
+                null, // available
+                0, // page
+                10, // size
+                null, // sortBy
+                null // sortDirection
+        );
 
-    assertEquals(200, response.getStatusCode().value());
-    assertNotNull(response.getBody());
-    assertEquals(2, response.getBody().getContent().size());
-    verify(service).getFilteredProducts(
-        null, null, null, 0, 10, null, null
-    );
-}
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getContent().size());
+        verify(service).getFilteredProducts(
+                null, null, null, 0, 10, null, null);
+    }
 
     @Test
     void updateProductById_found_returnsUpdated() {
