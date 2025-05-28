@@ -26,7 +26,6 @@ import com.example.inventory.repository.ProductRepository;
 class ProductServiceTest {
     private ProductRepository repository;
     private CategoryService categoryService;
-    private ProductFileStorageService storageService;
     private ProductService service;
     private static final double DEFAULT_RESTOCK = 10.0;
 
@@ -34,8 +33,7 @@ class ProductServiceTest {
     void setUp() {
         repository = mock(ProductRepository.class);
         categoryService = mock(CategoryService.class);
-        storageService = mock(ProductFileStorageService.class);
-        service = new ProductService(repository, categoryService, storageService);
+        service = new ProductService(repository, categoryService);
     }
 
     @Test
@@ -59,7 +57,6 @@ class ProductServiceTest {
         assertEquals(LocalDate.now(), result.getExpirationDate());
         assertTrue(result.isActive());
         verify(repository).save(any(Product.class));
-        verify(storageService).saveProducts(any());
     }
 
     @Test
@@ -120,7 +117,6 @@ class ProductServiceTest {
 
         assertFalse(product.isActive());
         repository.updateById(eq(1L), eq(product));
-        verify(storageService).saveProducts(any());
     }
 
     @Test
@@ -170,7 +166,6 @@ class ProductServiceTest {
         assertEquals(10, result.getStock());
         assertEquals(LocalDate.now(), result.getExpirationDate());
         verify(repository).updateById(eq(1L), any(Product.class));
-        verify(storageService).saveProducts(any());
     }
 
     @Test
@@ -210,7 +205,6 @@ class ProductServiceTest {
 
         assertEquals(0, product.getStock());
         repository.updateById(eq(1L), eq(product));
-        verify(storageService).saveProducts(any());
     }
 
     @Test
@@ -234,7 +228,6 @@ class ProductServiceTest {
 
         assertEquals(DEFAULT_RESTOCK, product.getStock());
         repository.updateById(eq(1L), eq(product));
-        verify(storageService).saveProducts(any());
     }
 
     @Test

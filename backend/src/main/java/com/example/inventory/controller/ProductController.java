@@ -2,7 +2,6 @@ package com.example.inventory.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +40,7 @@ public class ProductController {
     }
 
     // Get filtered products: GET
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<PagedResponse<Product>> getFilteredProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) List<Long> categories,
@@ -74,7 +73,7 @@ public class ProductController {
 
     // Mark product as outofstock
     // @PUT outofstock
-    @RequestMapping(value = "/{id}/outofstock", method = RequestMethod.POST)
+    @PutMapping("/{id}/outofstock")
     public ResponseEntity<Product> markProductAsOutOfStock(@PathVariable Long id) {
         Optional<Product> existingProductOpt = productService.getProductById(id);
 
@@ -88,8 +87,8 @@ public class ProductController {
     }
 
     // Mark product as instock
-    // @PUT outofstock
-    @RequestMapping(value = "/{id}/instock", method = RequestMethod.POST)
+    // @PUT instock
+    @PutMapping("/{id}/instock")
     public ResponseEntity<Product> markProductAsInStock(@PathVariable Long id) {
         Optional<Product> existingProductOpt = productService.getProductById(id);
 

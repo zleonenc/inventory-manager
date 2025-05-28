@@ -329,6 +329,8 @@ const ProductTable = () => {
                             showFirstButton
                             showLastButton
                             size="medium"
+                            boundaryCount={1}
+                            siblingCount={0}
                             shape="rounded"
                         />
                     </Box>

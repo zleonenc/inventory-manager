@@ -22,14 +22,12 @@ import com.example.inventory.repository.CategoryRepository;
 
 class CategoryServiceTest {
     private CategoryRepository repository;
-    private CategoryFileStorageService storageService;
     private CategoryService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(CategoryRepository.class);
-        storageService = mock(CategoryFileStorageService.class);
-        service = new CategoryService(repository, storageService);
+        service = new CategoryService(repository);
     }
 
     @Test

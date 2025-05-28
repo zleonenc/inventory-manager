@@ -21,15 +21,12 @@ import com.example.inventory.dto.PagedResponse;
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
-    private final ProductFileStorageService storageService;
 
     private static final int DEFAULT_RESTOCK = 10;
 
-    public ProductService(ProductRepository productRepository, CategoryService categoryService,
-            ProductFileStorageService storageService) {
+    public ProductService(ProductRepository productRepository, CategoryService categoryService) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
-        this.storageService = storageService;
     }
 
     public Product saveFromDTO(ProductDTO productDTO) {
@@ -43,7 +40,6 @@ public class ProductService {
                 productDTO.getExpirationDate());
 
         Product savedProduct = productRepository.save(product);
-        storageService.saveProducts(getAllProducts());
         return savedProduct;
     }
 
@@ -81,13 +77,13 @@ public class ProductService {
         }
 
         List<Product> sortedProducts = filteredProductsList.stream()
-                                          .sorted(finalComparator)
-                                          .collect(Collectors.toList());
+                .sorted(finalComparator)
+                .collect(Collectors.toList());
 
         long totalElements = sortedProducts.size();
 
         List<Product> paged = sortedProducts.stream()
-                .skip((long)page * size)
+                .skip((long) page * size)
                 .limit(size)
                 .collect(Collectors.toList());
 
@@ -110,13 +106,17 @@ public class ProductService {
                 fieldComparator = Comparator.comparingDouble(Product::getPrice);
                 break;
             case "category":
-                fieldComparator = Comparator.comparing(p -> (p.getCategory() != null && p.getCategory().getName() != null) ? p.getCategory().getName() : "", String.CASE_INSENSITIVE_ORDER);
+                fieldComparator = Comparator.comparing(
+                        p -> (p.getCategory() != null && p.getCategory().getName() != null) ? p.getCategory().getName()
+                                : "",
+                        String.CASE_INSENSITIVE_ORDER);
                 break;
             case "stock":
                 fieldComparator = Comparator.comparingDouble(Product::getStock);
                 break;
             case "expirationdate":
-                fieldComparator = Comparator.comparing(Product::getExpirationDate, Comparator.nullsLast(LocalDate::compareTo));
+                fieldComparator = Comparator.comparing(Product::getExpirationDate,
+                        Comparator.nullsLast(LocalDate::compareTo));
                 break;
             default:
                 return (p1, p2) -> 0;
@@ -154,7 +154,6 @@ public class ProductService {
 
         product.setActive(false); // Soft delete
         productRepository.updateById(id, product);
-        storageService.saveProducts(getAllProducts());
     }
 
     public Product updateProductById(Long id, ProductDTO productDTO) {
@@ -172,30 +171,29 @@ public class ProductService {
         existingProduct.setUpdateDate(LocalDate.now());
 
         Product updatedProduct = productRepository.updateById(id, existingProduct);
-        storageService.saveProducts(getAllProducts());
 
         return updatedProduct;
     }
 
-    public void markProductAsOutOfStock(Long id) {
+    public Product markProductAsOutOfStock(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.setStock(0);
-        productRepository.updateById(id, product);
-        storageService.saveProducts(getAllProducts());
+        Product updatedProduct = productRepository.updateById(id, product);
+        return updatedProduct;
     }
 
-    public void markProductAsInStock(Long id) {
+    public Product markProductAsInStock(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.setStock(DEFAULT_RESTOCK);
-        productRepository.updateById(id, product);
-        storageService.saveProducts(getAllProducts());
+
+        Product updatedProduct = productRepository.updateById(id, product);
+        return updatedProduct;
     }
 
     public void clearProducts() {
         productRepository.clear();
-        storageService.clear();
     }
 
     public List<InventoryMetricsDTO> getInventoryMetrics() {
@@ -226,7 +224,8 @@ public class ProductService {
                     .average()
                     .orElse(0.0);
 
-            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, totalStock, totalValue, averagePrice);
+            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, totalStock, totalValue,
+                    averagePrice);
             metrics.add(metric);
         }
 
@@ -242,7 +241,8 @@ public class ProductService {
                 .average()
                 .orElse(0.0);
 
-        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L,"Overall", overallTotalStock, overallTotalValue,
+        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L, "Overall", overallTotalStock,
+                overallTotalValue,
                 overallAveragePrice);
 
         metrics.add(overallMetrics);

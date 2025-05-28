@@ -1,1 +1,58 @@
-[{"id":1,"name":"Fruits","creationDate":"2025-05-27","updateDate":"2025-05-27","active":true},{"id":2,"name":"Electronics","creationDate":"2025-05-27","updateDate":"2025-05-27","active":true},{"id":3,"name":"Vegetables","creationDate":"2025-05-27","updateDate":"2025-05-27","active":true},{"id":4,"name":"Seeds","creationDate":"2025-05-27","updateDate":"2025-05-27","active":true}]
+[
+    {
+        "id": 1,
+        "name": "Fruits",
+        "creationDate": "2025-05-27",
+        "updateDate": "2025-05-27",
+        "active": true
+    },
+    {
+        "id": 2,
+        "name": "Electronics",
+        "creationDate": "2025-05-27",
+        "updateDate": "2025-05-27",
+        "active": true
+    },
+    {
+        "id": 3,
+        "name": "Vegetables",
+        "creationDate": "2025-05-27",
+        "updateDate": "2025-05-27",
+        "active": true
+    },
+    {
+        "id": 4,
+        "name": "Seeds",
+        "creationDate": "2025-05-27",
+        "updateDate": "2025-05-27",
+        "active": true
+    },
+    {
+        "id": 5,
+        "name": "Clothes",
+        "creationDate": "2025-05-28",
+        "updateDate": "2025-05-28",
+        "active": true
+    },
+    {
+        "id": 6,
+        "name": "Books",
+        "creationDate": "2025-05-28",
+        "updateDate": "2025-05-28",
+        "active": true
+    },
+    {
+        "id": 7,
+        "name": "Home Goods",
+        "creationDate": "2025-05-28",
+        "updateDate": "2025-05-28",
+        "active": true
+    },
+    {
+        "id": 8,
+        "name": "Toys",
+        "creationDate": "2025-05-28",
+        "updateDate": "2025-05-28",
+        "active": true
+    }
+]

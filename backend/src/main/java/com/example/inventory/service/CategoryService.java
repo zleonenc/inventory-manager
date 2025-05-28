@@ -12,19 +12,9 @@ import com.example.inventory.repository.CategoryRepository;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    private final CategoryFileStorageService storageService;
-
-    public CategoryService() {
-        this(new CategoryRepository(), new CategoryFileStorageService());
-    }
 
     public CategoryService(CategoryRepository categoryRepository) {
-        this(categoryRepository, new CategoryFileStorageService());
-    }
-
-    public CategoryService(CategoryRepository categoryRepository, CategoryFileStorageService storageService) {
         this.categoryRepository = categoryRepository;
-        this.storageService = storageService;
     }
 
     public Category saveCategory(Category category) {
@@ -34,7 +24,6 @@ public class CategoryService {
         }
 
         Category savedCategory = categoryRepository.save(category);
-        storageService.saveCategories(getAllActiveCategories());
         return savedCategory;
     }
 
@@ -71,7 +60,6 @@ public class CategoryService {
         existingCategory.setUpdateDate(LocalDate.now());
 
         Category updatedCategory = categoryRepository.updateById(id, existingCategory);
-        storageService.saveCategories(getAllCategories());
         return updatedCategory;
     }
 
@@ -83,12 +71,10 @@ public class CategoryService {
             throw new IllegalArgumentException("Category does not exist");
         } else {
             category.setActive(false);
-            storageService.saveCategories(getAllCategories());
         }
     }
 
     public void clearCategories() {
         categoryRepository.clear();
-        storageService.clear();
     }
 }
