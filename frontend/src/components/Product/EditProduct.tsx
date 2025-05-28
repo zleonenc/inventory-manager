@@ -66,8 +66,8 @@ const EditProduct = ({ open, onClose, product }: EditProductProps) => {
         const errors = {
             name: !name,
             categoryId: !categoryId,
-            stock: stock === "" || isNaN(Number(stock)),
-            price: price === "" || isNaN(Number(price)),
+            stock: stock === "" || isNaN(Number(stock)) || Number(stock) < 0,
+            price: price === "" || isNaN(Number(price)) || Number(price) < 0,
         };
         setTouched({
             name: true,
@@ -184,10 +184,10 @@ const EditProduct = ({ open, onClose, product }: EditProductProps) => {
                             value={stock}
                             onChange={e => setStock(Number(e.target.value))}
                             onBlur={() => setTouched(t => ({ ...t, stock: true }))}
-                            error={touched.stock && (stock === "" || isNaN(Number(stock)))}
+                            error={touched.stock && (stock === "" || isNaN(Number(stock)) || Number(stock) < 0)}
                             helperText={
-                                touched.stock && (stock === "" || isNaN(Number(stock)))
-                                    ? "Stock is required and must be a number"
+                                touched.stock && (stock === "" || isNaN(Number(stock)) || Number(stock) < 0)
+                                    ? "Stock is required and must be a positive number or zero"
                                     : ""
                             }
                             fullWidth
@@ -202,10 +202,10 @@ const EditProduct = ({ open, onClose, product }: EditProductProps) => {
                             value={price}
                             onChange={e => setPrice(Number(e.target.value))}
                             onBlur={() => setTouched(t => ({ ...t, price: true }))}
-                            error={touched.price && (price === "" || isNaN(Number(price)))}
+                            error={touched.price && (price === "" || isNaN(Number(price)) || Number(price) < 0)}
                             helperText={
-                                touched.price && (price === "" || isNaN(Number(price)))
-                                    ? "Unit price is required and must be a number"
+                                touched.price && (price === "" || isNaN(Number(price)) || Number(price) < 0)
+                                    ? "Unit price is required and must be a positive number or zero"
                                     : ""
                             }
                             fullWidth

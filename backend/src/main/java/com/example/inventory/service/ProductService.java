@@ -3,6 +3,7 @@ package com.example.inventory.service;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -58,9 +59,11 @@ public class ProductService {
 
     public PagedResponse<Product> getFilteredProducts(
             String name, List<Long> categories, String available,
-            int page, int size, String sortBy, String sortDirection) {
+            int page, int size, String primarySortBy, String primarySortDirection,
+            String secondarySortBy, String secondarySortDirection) {
 
-        List<Product> filtered = productRepository.getAll().stream()
+        // Filtering
+        List<Product> filteredProductsList = productRepository.getAll().stream()
                 .filter(Product::isActive)
                 .filter(p -> (name == null || p.getName().toLowerCase().contains(name.toLowerCase())) &&
                         (categories == null || categories.isEmpty() ||
@@ -69,48 +72,57 @@ public class ProductService {
                         (available == null || available.isEmpty() ||
                                 ("instock".equalsIgnoreCase(available) && p.getStock() > 0) ||
                                 ("outofstock".equalsIgnoreCase(available) && p.getStock() == 0)))
-                .sorted((p1, p2) -> {
-                    if ("name".equalsIgnoreCase(sortBy)) {
-                        return "asc".equalsIgnoreCase(sortDirection)
-                                ? p1.getName().compareTo(p2.getName())
-                                : p2.getName().compareTo(p1.getName());
-                    } else if ("price".equalsIgnoreCase(sortBy)) {
-                        return "asc".equalsIgnoreCase(sortDirection)
-                                ? Double.compare(p1.getPrice(), p2.getPrice())
-                                : Double.compare(p2.getPrice(), p1.getPrice());
-                    } else if ("category".equalsIgnoreCase(sortBy)) {
-                        String category1 = p1.getCategory() != null ? p1.getCategory().getName() : "";
-                        String category2 = p2.getCategory() != null ? p2.getCategory().getName() : "";
-                        return "asc".equalsIgnoreCase(sortDirection)
-                                ? category1.compareTo(category2)
-                                : category2.compareTo(category1);
-                    } else if ("stock".equalsIgnoreCase(sortBy)) {
-                        return "asc".equalsIgnoreCase(sortDirection)
-                                ? Double.compare(p1.getStock(), p2.getStock())
-                                : Double.compare(p2.getStock(), p1.getStock());
-                    } else if ("expirationdate".equalsIgnoreCase(sortBy)) {
-                        if (p1.getExpirationDate() == null && p2.getExpirationDate() == null)
-                            return 0;
-                        if (p1.getExpirationDate() == null)
-                            return "asc".equalsIgnoreCase(sortDirection) ? 1 : -1;
-                        if (p2.getExpirationDate() == null)
-                            return "asc".equalsIgnoreCase(sortDirection) ? -1 : 1;
-                        return "asc".equalsIgnoreCase(sortDirection)
-                                ? p1.getExpirationDate().compareTo(p2.getExpirationDate())
-                                : p2.getExpirationDate().compareTo(p1.getExpirationDate());
-                    }
-                    return 0;
-                })
                 .collect(Collectors.toList());
 
-        long totalElements = filtered.size();
+        // Sorting
+        Comparator<Product> finalComparator = createComparator(primarySortBy, primarySortDirection);
+        if (secondarySortBy != null && !secondarySortBy.isEmpty()) {
+            finalComparator = finalComparator.thenComparing(createComparator(secondarySortBy, secondarySortDirection));
+        }
 
-        List<Product> paged = filtered.stream()
-                .skip(page * size)
+        List<Product> sortedProducts = filteredProductsList.stream()
+                                          .sorted(finalComparator)
+                                          .collect(Collectors.toList());
+
+        long totalElements = sortedProducts.size();
+
+        List<Product> paged = sortedProducts.stream()
+                .skip((long)page * size)
                 .limit(size)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(paged, totalElements);
+    }
+
+    private Comparator<Product> createComparator(String sortByField, String direction) {
+        if (sortByField == null || sortByField.isEmpty()) {
+            return (p1, p2) -> 0;
+        }
+
+        boolean ascending = (direction == null || "asc".equalsIgnoreCase(direction));
+        Comparator<Product> fieldComparator;
+
+        switch (sortByField.toLowerCase()) {
+            case "name":
+                fieldComparator = Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER);
+                break;
+            case "price":
+                fieldComparator = Comparator.comparingDouble(Product::getPrice);
+                break;
+            case "category":
+                fieldComparator = Comparator.comparing(p -> (p.getCategory() != null && p.getCategory().getName() != null) ? p.getCategory().getName() : "", String.CASE_INSENSITIVE_ORDER);
+                break;
+            case "stock":
+                fieldComparator = Comparator.comparingDouble(Product::getStock);
+                break;
+            case "expirationdate":
+                fieldComparator = Comparator.comparing(Product::getExpirationDate, Comparator.nullsLast(LocalDate::compareTo));
+                break;
+            default:
+                return (p1, p2) -> 0;
+        }
+
+        return ascending ? fieldComparator : fieldComparator.reversed();
     }
 
     public Optional<Product> getProductById(Long id) {
@@ -191,15 +203,16 @@ public class ProductService {
                 .filter(p -> p.getStock() > 0)
                 .collect(Collectors.toList());
 
-        Map<String, List<Product>> groupedByCategory = allProducts.stream()
-                .collect(Collectors.groupingBy(p -> p.getCategory().getName()));
+        Map<Long, List<Product>> groupedByCategoryId = allProducts.stream()
+                .filter(p -> p.getCategory() != null && p.getCategory().getId() != null)
+                .collect(Collectors.groupingBy(p -> p.getCategory().getId()));
 
         List<InventoryMetricsDTO> metrics = new ArrayList<>();
 
-        for (Map.Entry<String, List<Product>> entry : groupedByCategory.entrySet()) {
-            String categoryName = entry.getKey();
+        for (Map.Entry<Long, List<Product>> entry : groupedByCategoryId.entrySet()) {
+            Long categoryId = entry.getKey();
             List<Product> productsInCategory = entry.getValue();
-
+            String categoryName = productsInCategory.get(0).getCategory().getName();
             double totalStock = productsInCategory.stream()
                     .mapToDouble(Product::getStock)
                     .sum();
@@ -213,7 +226,7 @@ public class ProductService {
                     .average()
                     .orElse(0.0);
 
-            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryName, totalStock, totalValue, averagePrice);
+            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, totalStock, totalValue, averagePrice);
             metrics.add(metric);
         }
 
@@ -229,7 +242,7 @@ public class ProductService {
                 .average()
                 .orElse(0.0);
 
-        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO("Overall", overallTotalStock, overallTotalValue,
+        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L,"Overall", overallTotalStock, overallTotalValue,
                 overallAveragePrice);
 
         metrics.add(overallMetrics);

@@ -27,13 +27,15 @@ describe("productService", () => {
             available: "instock",
             page: 0,
             size: 2,
-            sortBy: "name",
-            sortDirection: "asc"
+            primarySortBy: "name",
+            primarySortDirection: "asc",
+            secondarySortBy: null,
+            secondarySortDirection: null
         };
 
         const result = await productService.getProducts(params);
         expect(fetch).toHaveBeenCalledWith(
-            expect.stringContaining("/api/products?name=Product&categories=1%2C2&available=instock&page=0&size=2&sortBy=name&sortDirection=asc")
+            expect.stringContaining("/api/products?name=Product&categories=1%2C2&available=instock&page=0&size=2&primarySortBy=name&primarySortDirection=asc&secondarySortBy=null&secondarySortDirection=null"),
         );
         expect(result).toEqual(mockResponse);
     });

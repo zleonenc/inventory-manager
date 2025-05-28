@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 
 import { getProducts as apiGetProducts, getInventoryMetrics as apiGetInventoryMetrics, createProduct as apiCreateProduct, updateProduct as apiUpdateProduct, setProductInStock as apiSetProductInStock, setProductOutOfStock as apiSetProductOutOfStock, deleteProduct as apiDeleteProduct } from "../services/productService";
 import { Product } from "../types/Product";
@@ -9,10 +9,10 @@ interface ProductContextType {
     products: Product[];
     total: number;
     fetchProducts: (params?: Record<string, any>) => Promise<void>;
-    createProduct: (product: ProductDTO) => Promise<void>;
-    updateProduct: (id: number, product: ProductDTO) => Promise<void>;
-    setProductInStock: (id: number) => Promise<void>;
-    setProductOutOfStock: (id: number) => Promise<void>;
+    createProduct: (product: ProductDTO) => Promise<Product>;
+    updateProduct: (id: number, product: ProductDTO) => Promise<Product>;
+    setProductInStock: (id: number) => Promise<Product>;
+    setProductOutOfStock: (id: number) => Promise<Product>;
     deleteProduct: (id: number) => Promise<void>;
     loading: boolean;
     error: string | null;
@@ -28,7 +28,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<Metric[]>([]);
 
-    const fetchProducts = async (params: Record<string, any> = {}) => {
+    const fetchProducts = useCallback(async (params: Record<string, any> = {}) => {
         setLoading(true);
         setError(null);
         try {
@@ -42,69 +42,87 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const createProduct = async (product: ProductDTO) => {
+    const fetchMetrics = useCallback(async () => {
+        try {
+            const data = await apiGetInventoryMetrics();
+            setMetrics(data);
+        } catch (err) {
+            setError("Failed to fetch metrics");
+            setMetrics([]);
+            console.error(err);
+        }
+    }, []);
+    const createProduct = useCallback(async (productDTO: ProductDTO): Promise<Product> => {
         setLoading(true);
         setError(null);
         try {
-            await apiCreateProduct(product);
+            const newProduct = await apiCreateProduct(productDTO);
             await fetchProducts();
             await fetchMetrics();
+            return newProduct;
         } catch (err) {
             setError("Failed to create product");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchProducts, fetchMetrics]);
 
-    const updateProduct = async (id: number, product: ProductDTO) => {
+    const updateProduct = useCallback(async (id: number, productDTO: ProductDTO): Promise<Product> => {
         setLoading(true);
         setError(null);
         try {
-            await apiUpdateProduct(id, product);
-            await fetchProducts();
+            const updatedProduct = await apiUpdateProduct(id, productDTO);
+            setProducts(prevProducts => prevProducts.map(p => p.id === id ? updatedProduct : p));
             await fetchMetrics();
+            return updatedProduct;
         } catch (err) {
             setError("Failed to update product");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchMetrics]);
 
-    const setProductInStock = async (id: number) => {
+    const setProductInStock = useCallback(async (id: number): Promise<Product> => {
         setLoading(true);
         setError(null);
         try {
-            await apiSetProductInStock(id);
-            await fetchProducts();
+            const updatedProduct = await apiSetProductInStock(id);
+            setProducts(prevProducts => prevProducts.map(p => p.id === id ? updatedProduct : p));
             await fetchMetrics();
+            return updatedProduct;
         } catch (err) {
             setError("Failed to set product in stock");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchMetrics]); 
 
-    const setProductOutOfStock = async (id: number) => {
+    const setProductOutOfStock = useCallback(async (id: number): Promise<Product> => {
         setLoading(true);
         setError(null);
         try {
-            await apiSetProductOutOfStock(id);
-            await fetchProducts();
+            const updatedProduct = await apiSetProductOutOfStock(id);
+            setProducts(prevProducts => prevProducts.map(p => p.id === id ? updatedProduct : p));
             await fetchMetrics();
+            return updatedProduct;
         } catch (err) {
             setError("Failed to set product out of stock");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchMetrics]);
 
-    const deleteProduct = async (id: number) => {
+    const deleteProduct = useCallback(async (id: number) => {
         setLoading(true);
         setError(null);
         try {
@@ -114,24 +132,16 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         } catch (err) {
             setError("Failed to delete product");
             console.error(err);
+            throw err;
         } finally {
             setLoading(false);
         }
-    };
-
-    const fetchMetrics = async () => {
-        try {
-            const data = await apiGetInventoryMetrics();
-            setMetrics(data);
-        } catch (err) {
-            setMetrics([]);
-        }
-    };
-
+    }, [fetchProducts, fetchMetrics]);
     useEffect(() => {
         fetchProducts();
         fetchMetrics();
-    }, []);
+    }, [fetchProducts, fetchMetrics]);
+
 
     return (
         <ProductContext.Provider
@@ -159,4 +169,3 @@ export const useProductContext = () => {
     if (!context) throw new Error("useProductContext must be used within a ProductProvider");
     return context;
 };
-

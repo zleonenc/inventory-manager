@@ -48,11 +48,13 @@ public class ProductController {
             @RequestParam(required = false) String available,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
-
+            @RequestParam(required = false) String primarySortBy,
+            @RequestParam(required = false, defaultValue = "asc") String primarySortDirection,
+            @RequestParam(required = false) String secondarySortBy,
+            @RequestParam(required = false, defaultValue = "asc") String secondarySortDirection) {
         PagedResponse<Product> response = productService.getFilteredProducts(
-                name, categories, available, page, size, sortBy, sortDirection);
+                name, categories, available, page, size, primarySortBy, primarySortDirection, secondarySortBy,
+                secondarySortDirection);
         return ResponseEntity.ok(response);
     }
 

@@ -1,5 +1,6 @@
 import { Product } from "../types/Product";
 import { ProductDTO } from "../types/ProductDTO";
+import { Metric } from "../types/Metric";
 
 const API_URL = "http://localhost:9090/api/products";
 
@@ -15,7 +16,7 @@ export const getProducts = async (params: Record<string, any> = {}): Promise<Pro
     return response.json();
 };
 
-export const createProduct = async (product: ProductDTO): Promise<any> => {
+export const createProduct = async (product: ProductDTO): Promise<Product> => {
     const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,7 +28,7 @@ export const createProduct = async (product: ProductDTO): Promise<any> => {
     return response.json();
 };
 
-export const updateProduct = async (id: number, product: ProductDTO): Promise<any> => {
+export const updateProduct = async (id: number, product: ProductDTO): Promise<Product> => {
     const response = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -68,7 +69,7 @@ export const deleteProduct = async (id: number): Promise<void> => {
     }
 };
 
-export const getInventoryMetrics = async (): Promise<any[]> => {
+export const getInventoryMetrics = async (): Promise<Metric[]> => {
     const response = await fetch(`${API_URL}/metrics`);
     if (!response.ok) {
         throw new Error("Failed to fetch inventory metrics");

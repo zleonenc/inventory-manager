@@ -17,6 +17,8 @@ buildNumber.properties
 .classpath
 /node_modules
 
+.vscode
+
 #OS
 .DS_Store
 Thumbs.db

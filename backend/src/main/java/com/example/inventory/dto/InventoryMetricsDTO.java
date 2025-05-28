@@ -1,6 +1,7 @@
 package com.example.inventory.dto;
 
 public class InventoryMetricsDTO {
+    private Long categoryId;
     private String categoryName;
     private double totalStock;
     private double totalValue;
@@ -9,11 +10,21 @@ public class InventoryMetricsDTO {
     public InventoryMetricsDTO() {
     }
 
-    public InventoryMetricsDTO(String categoryName, double totalStock, double totalValue, double averagePrice) {
+    public InventoryMetricsDTO(Long categoryId, String categoryName, double totalStock, double totalValue,
+            double averagePrice) {
+        this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.totalStock = totalStock;
         this.totalValue = totalValue;
         this.averagePrice = averagePrice;
+    }
+
+    public Long getCategoryId() {
+        return this.categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getCategoryName() {

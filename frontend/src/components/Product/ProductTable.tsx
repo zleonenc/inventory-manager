@@ -8,7 +8,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
-import TablePagination from "@mui/material/TablePagination";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -36,6 +35,7 @@ import { useProductContext } from "../../context/ProductContext";
 import EditProduct from "./EditProduct";
 import { Product } from "../../types/Product";
 import styles from "./ProductTable.module.css";
+import { formatCurrency } from "../../utils/format";
 
 const DEFAULT_ROWS_PER_PAGE = 10;
 
@@ -79,14 +79,28 @@ const ProductTable = () => {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
-    const [sortBy, setSortBy] = useState("name");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    const [primarySortBy, setPrimarySortBy] = useState<string | null>("name");
+    const [primarySortDirection, setPrimaryDirection] = useState<"asc" | "desc">("asc");
+    const [secondarySortBy, setSecondarySortBy] = useState<string | null>(null);
+    const [secondarySortDirection, setSecondarySortDirection] = useState<"asc" | "desc">("asc");
 
-    const [sucessAlert, setSuccessAlert] = useState(false);
+    const [successAlert, setSuccessAlert] = useState(false);
 
     useEffect(() => {
-        fetchProducts({ page, size: rowsPerPage, sortBy, sortDirection });
-    }, [page, rowsPerPage, sortBy, sortDirection]);
+        const params: any = {
+            page,
+            size: rowsPerPage,
+        };
+        if (primarySortBy) {
+            params.primarySortBy = primarySortBy;
+            params.primarySortDirection = primarySortDirection;
+        }
+        if (secondarySortBy && primarySortBy) {
+            params.secondarySortBy = secondarySortBy;
+            params.secondarySortDirection = secondarySortDirection;
+        }
+        fetchProducts(params);
+    }, [page, rowsPerPage, primarySortBy, primarySortDirection, secondarySortBy, secondarySortDirection, fetchProducts]);
 
     const handleChangeRowsPerPage = (event: any) => {
         setRowsPerPage(Number(event.target.value));
@@ -106,7 +120,16 @@ const ProductTable = () => {
     const handleDeleteConfirm = async () => {
         if (productToDelete) {
             await deleteProduct(productToDelete.id);
-            fetchProducts({ page, size: rowsPerPage });
+            const params: any = { page, size: rowsPerPage };
+            if (primarySortBy) {
+                params.primarySortBy = primarySortBy;
+                params.primarySortDirection = primarySortDirection;
+            }
+            if (secondarySortBy && primarySortBy) {
+                params.secondarySortBy = secondarySortBy;
+                params.secondarySortDirection = secondarySortDirection;
+            }
+            fetchProducts(params);
             setSuccessAlert(true);
         }
         setDeleteDialogOpen(false);
@@ -119,13 +142,39 @@ const ProductTable = () => {
     };
 
     const handleSort = (column: string) => {
-        if (sortBy === column) {
-            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        if (primarySortBy === column) {
+            setPrimaryDirection(primarySortDirection === "asc" ? "desc" : "asc");
+            if (primarySortDirection === "desc") {
+                setPrimarySortBy(secondarySortBy);
+                setPrimaryDirection(secondarySortBy ? secondarySortDirection : "asc");
+                setSecondarySortBy(null);
+                setSecondarySortDirection("asc");
+            }
+        } else if (secondarySortBy === column) {
+            setSecondarySortDirection(secondarySortDirection === "asc" ? "desc" : "asc");
+            if (secondarySortDirection === "desc") {
+                setSecondarySortBy(null);
+                setSecondarySortDirection("asc");
+            }
         } else {
-            setSortBy(column);
-            setSortDirection("asc");
+            if (primarySortBy === null) {
+                setPrimarySortBy(column);
+                setPrimaryDirection("asc");
+                setSecondarySortBy(null);
+            } else {
+                setSecondarySortBy(column);
+                setSecondarySortDirection("asc");
+            }
         }
     };
+
+    const columns = [
+        { id: "category", label: "Category" },
+        { id: "name", label: "Name" },
+        { id: "price", label: "Price" },
+        { id: "expirationdate", label: "Expiration Date" },
+        { id: "stock", label: "Stock" },
+    ];
 
     return (
         <>
@@ -133,87 +182,42 @@ const ProductTable = () => {
                 <Table stickyHeader className={styles.productTable}>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: "gray" }}>
-                            <TableCell className={styles.headerCell}>
-                                <TableSortLabel
-                                    active={sortBy === "category"}
-                                    direction={sortBy === "category" ? sortDirection : "asc"}
-                                    IconComponent={() => (
-                                        <span>
-                                            {sortBy === "category" && sortDirection === "asc" && "▲"}
-                                            {sortBy === "category" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "category" && "▲▼"}
-                                        </span>
-                                    )
-                                    }
-                                    onClick={() => handleSort("category")}
-                                >
-                                    Category
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell className={styles.headerCell}>
-                                <TableSortLabel
-                                    active={sortBy === "name"}
-                                    direction={sortBy === "name" ? sortDirection : "asc"}
-                                    IconComponent={() => (
-                                        <span>
-                                            {sortBy === "name" && sortDirection === "asc" && "▲"}
-                                            {sortBy === "name" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "name" && "▲▼"}
-                                        </span>
-                                    )}
-                                    onClick={() => handleSort("name")}
-                                >
-                                    Name
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell className={styles.headerCell}>
-                                <TableSortLabel
-                                    active={sortBy === "price"}
-                                    direction={sortBy === "price" ? sortDirection : "asc"}
-                                    IconComponent={() => (
-                                        <span>
-                                            {sortBy === "price" && sortDirection === "asc" && "▲"}
-                                            {sortBy === "price" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "price" && "▲▼"}
-                                        </span>
-                                    )}
-                                    onClick={() => handleSort("price")}
-                                >
-                                    Price
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell className={styles.headerCell}>
-                                <TableSortLabel
-                                    active={sortBy === "expirationdate"}
-                                    direction={sortBy === "expirationdate" ? sortDirection : "asc"}
-                                    IconComponent={() => (
-                                        <span>
-                                            {sortBy === "expirationdate" && sortDirection === "asc" && "▲"}
-                                            {sortBy === "expirationdate" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "expirationdate" && "▲▼"}
-                                        </span>
-                                    )}
-                                    onClick={() => handleSort("expirationdate")}
-                                >
-                                    Expiration Date
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell className={styles.headerCell}>
-                                <TableSortLabel
-                                    active={sortBy === "stock"}
-                                    direction={sortBy === "stock" ? sortDirection : "asc"}
-                                    IconComponent={() => (
-                                        <span>
-                                            {sortBy === "stock" && sortDirection === "asc" && "▲"}
-                                            {sortBy === "stock" && sortDirection === "desc" && "▼"}
-                                            {sortBy !== "stock" && "▲▼"}
-                                        </span>
-                                    )}
-                                    onClick={() => handleSort("stock")}
-                                >
-                                    Stock
-                                </TableSortLabel>
-                            </TableCell>
+                            {columns.map((column) => {
+                                const columnId = column.id;
+                                const isPrimarySort = primarySortBy === columnId;
+                                const isSecondarySort = secondarySortBy === columnId;
+                                let iconSymbol = "↕"; // Default
+
+                                if (isPrimarySort) {
+                                    iconSymbol = primarySortDirection === "asc" ? "▲" : "▼";
+                                } else if (isSecondarySort) {
+                                    iconSymbol = secondarySortDirection === "asc" ? "▲" : "▼";
+                                }
+                                return (
+                                    <TableCell
+                                        key={columnId}
+                                        className={styles.headerCell}
+                                        sx={{
+                                            ...(isPrimarySort && { borderTop: '3px solid #1976d2' }),
+                                            ...(isSecondarySort && { borderTop: '4px double #4caf50' }),
+                                        }}
+                                    >
+                                        <TableSortLabel
+                                            active={isPrimarySort || isSecondarySort}
+                                            direction={isPrimarySort ? primarySortDirection : (isSecondarySort ? secondarySortDirection : "asc")}
+                                            IconComponent={() => <span>{iconSymbol}</span>}
+                                            sx={                                        
+                                                !(isPrimarySort || isSecondarySort) ? {
+                                                    '& .MuiTableSortLabel-icon': { opacity: 1 }
+                                                } : {}
+                                            }
+                                            onClick={() => handleSort(columnId)}
+                                        >
+                                            {column.label}
+                                        </TableSortLabel>
+                                    </TableCell>
+                                );
+                            })}
                             <TableCell className={styles.headerCell}>Toggle Stock</TableCell>
                             <TableCell className={styles.headerCell}>Actions</TableCell>
                         </TableRow>
@@ -242,7 +246,7 @@ const ProductTable = () => {
                                     </TableCell>
                                     <TableCell>
                                         <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
-                                            ${product.price.toFixed(2)}
+                                            {formatCurrency(product.price)}
                                         </span>
                                     </TableCell>
                                     <TableCell>
@@ -383,7 +387,7 @@ const ProductTable = () => {
             </Dialog>
 
             <Snackbar
-                open={sucessAlert}
+                open={successAlert}
                 autoHideDuration={2500}
                 onClose={() => setSuccessAlert(false)}
                 anchorOrigin={{ vertical: "top", horizontal: "center" }}

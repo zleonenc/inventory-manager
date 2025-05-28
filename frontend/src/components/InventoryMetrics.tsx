@@ -6,8 +6,22 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
+import { Metric } from "../types/Metric";
+import { formatCurrency, formatStock } from "../utils/format";
 import { useProductContext } from "../context/ProductContext";
 import styles from "./Product/ProductTable.module.css";
+
+interface HeaderCellConfig {
+    id: keyof Metric | string;
+    label: string;
+}
+
+const headerCells: HeaderCellConfig[] = [
+    { id: "categoryName", label: "Category" },
+    { id: "totalStock", label: "Total Products in Stock" },
+    { id: "totalValue", label: "Total Value in Stock" },
+    { id: "averagePrice", label: "Average Price in Stock" },
+];
 
 const InventoryMetrics = () => {
     const { metrics } = useProductContext();
@@ -23,19 +37,20 @@ const InventoryMetrics = () => {
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell className={styles.headerCell}>Category</TableCell>
-                            <TableCell className={styles.headerCell}>Total Products in Stock</TableCell>
-                            <TableCell className={styles.headerCell}>Total Value in Stock</TableCell>
-                            <TableCell className={styles.headerCell}>Average Price in Stock</TableCell>
+                            {headerCells.map((headerCell) => (
+                                <TableCell key={headerCell.id.toString()} className={styles.headerCell}>
+                                    {headerCell.label}
+                                </TableCell>
+                            ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {metrics.map((metric, index) => (
-                            <TableRow key={index}>
+                        {metrics.map((metric) => (
+                            <TableRow key={metric.categoryId}>
                                 <TableCell>{metric.categoryName}</TableCell>
-                                <TableCell>{metric.totalStock.toFixed(2)}</TableCell>
-                                <TableCell>${metric.totalValue.toFixed(2)}</TableCell>
-                                <TableCell>${metric.averagePrice.toFixed(2)}</TableCell>
+                                <TableCell>{formatStock(metric.totalStock)}</TableCell>
+                                <TableCell>{formatCurrency(metric.totalValue)}</TableCell>
+                                <TableCell>{formatCurrency(metric.averagePrice)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

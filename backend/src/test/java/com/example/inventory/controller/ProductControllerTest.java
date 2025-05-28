@@ -59,7 +59,7 @@ class ProductControllerTest {
         PagedResponse<Product> paged = new PagedResponse<>(products, 2);
 
         when(service.getFilteredProducts(
-                any(), any(), any(), anyInt(), anyInt(), any(), any())).thenReturn(paged);
+                any(), any(), any(), anyInt(), anyInt(), any(), any(), any(), any())).thenReturn(paged);
 
         ResponseEntity<PagedResponse<Product>> response = controller.getFilteredProducts(
                 null, // name
@@ -67,15 +67,17 @@ class ProductControllerTest {
                 null, // available
                 0, // page
                 10, // size
-                null, // sortBy
-                null // sortDirection
+                null, // primarySortBy
+                null, // primarySortDirection
+                null, // secondarySortBy
+                null // secondarySortDirection
         );
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().getContent().size());
         verify(service).getFilteredProducts(
-                null, null, null, 0, 10, null, null);
+                null, null, null, 0, 10, null, null, null, null);
     }
 
     @Test
