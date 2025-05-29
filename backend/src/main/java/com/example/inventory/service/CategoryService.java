@@ -71,6 +71,8 @@ public class CategoryService {
             throw new IllegalArgumentException("Category does not exist");
         } else {
             category.setActive(false);
+            category.setUpdateDate(LocalDate.now());
+            categoryRepository.updateById(id, category);
         }
     }
 

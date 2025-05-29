@@ -152,6 +152,8 @@ public class ProductService {
         Product product = productOptional.get();
 
         product.setActive(false); // Soft delete
+        product.setUpdateDate(LocalDate.now());
+
         productRepository.updateById(id, product);
     }
 
@@ -177,7 +179,10 @@ public class ProductService {
     public Product markProductAsOutOfStock(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+
         product.setStock(0);
+        product.setUpdateDate(LocalDate.now());
+
         Product updatedProduct = productRepository.updateById(id, product);
         return updatedProduct;
     }
@@ -185,7 +190,9 @@ public class ProductService {
     public Product markProductAsInStock(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+
         product.setStock(DEFAULT_RESTOCK);
+        product.setUpdateDate(LocalDate.now());
 
         Product updatedProduct = productRepository.updateById(id, product);
         return updatedProduct;
