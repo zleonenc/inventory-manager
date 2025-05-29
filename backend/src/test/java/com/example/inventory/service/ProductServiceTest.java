@@ -69,7 +69,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void getAllProducts_returnsOnlyActive() {
+    void getFilteredSortedProducts_returnsOnlyActive() {
         Category category = new Category(1L, "Category A");
         Product active = new Product(1L, "Product A", category, 10.0, 10, LocalDate.now());
         Product inactive = new Product(2L, "Product B", category, 10.0, 10, LocalDate.now());
@@ -77,7 +77,17 @@ class ProductServiceTest {
 
         when(repository.getAll()).thenReturn(List.of(active, inactive));
 
-        List<Product> result = service.getAllProducts();
+        List<Product> result = service.getFilteredSortedProducts(
+            null, // name
+            null, // categories
+            null, // available
+            0, // page
+            10, // size
+            null, // primarySortBy
+            null, // primarySortDirection
+            null, // secondarySortBy
+            null // secondarySortDirection
+        ).getContent();
         assertEquals(1, result.size());
         assertTrue(result.get(0).isActive());
         assertEquals("Product A", result.get(0).getName());

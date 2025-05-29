@@ -52,16 +52,16 @@ class ProductControllerTest {
     }
 
     @Test
-    void getFilteredProducts_returnsPagedResponse() {
+    void getFilteredSortedProducts_returnsPagedResponse() {
         Product product1 = new Product(1L, "Product A", new Category(1L, "Category A"), 1.0, 1, LocalDate.now());
         Product product2 = new Product(2L, "Product B", new Category(2L, "Category B"), 2.0, 2, LocalDate.now());
         List<Product> products = List.of(product1, product2);
         PagedResponse<Product> paged = new PagedResponse<>(products, 2);
 
-        when(service.getFilteredProducts(
+        when(service.getFilteredSortedProducts(
                 any(), any(), any(), anyInt(), anyInt(), any(), any(), any(), any())).thenReturn(paged);
 
-        ResponseEntity<PagedResponse<Product>> response = controller.getFilteredProducts(
+        ResponseEntity<PagedResponse<Product>> response = controller.getFilteredSortedProducts(
                 null, // name
                 null, // categories
                 null, // available
@@ -76,7 +76,7 @@ class ProductControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().getContent().size());
-        verify(service).getFilteredProducts(
+        verify(service).getFilteredSortedProducts(
                 null, null, null, 0, 10, null, null, null, null);
     }
 

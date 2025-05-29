@@ -41,7 +41,7 @@ public class ProductController {
 
     // Get filtered products: GET
     @GetMapping()
-    public ResponseEntity<PagedResponse<Product>> getFilteredProducts(
+    public ResponseEntity<PagedResponse<Product>> getFilteredSortedProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) String available,
@@ -51,7 +51,7 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "asc") String primarySortDirection,
             @RequestParam(required = false) String secondarySortBy,
             @RequestParam(required = false, defaultValue = "asc") String secondarySortDirection) {
-        PagedResponse<Product> response = productService.getFilteredProducts(
+        PagedResponse<Product> response = productService.getFilteredSortedProducts(
                 name, categories, available, page, size, primarySortBy, primarySortDirection, secondarySortBy,
                 secondarySortDirection);
         return ResponseEntity.ok(response);

@@ -49,11 +49,10 @@ public class ProductService {
 
     public List<Product> getAllProducts() {
         return productRepository.getAll().stream()
-                .filter(Product::isActive)
                 .collect(Collectors.toList());
     }
 
-    public PagedResponse<Product> getFilteredProducts(
+    public PagedResponse<Product> getFilteredSortedProducts(
             String name, List<Long> categories, String available,
             int page, int size, String primarySortBy, String primarySortDirection,
             String secondarySortBy, String secondarySortDirection) {
