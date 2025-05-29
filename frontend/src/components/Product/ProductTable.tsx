@@ -181,6 +181,11 @@ const ProductTable = () => {
             <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
                 <Table stickyHeader className={styles.productTable}>
                     <TableHead>
+                        <TableRow>
+                            <TableCell align="center" colSpan={7} sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                                Products
+                            </TableCell>
+                        </TableRow>
                         <TableRow sx={{ backgroundColor: "gray" }}>
                             {columns.map((column) => {
                                 const columnId = column.id;
@@ -206,7 +211,7 @@ const ProductTable = () => {
                                             active={isPrimarySort || isSecondarySort}
                                             direction={isPrimarySort ? primarySortDirection : (isSecondarySort ? secondarySortDirection : "asc")}
                                             IconComponent={() => <span>{iconSymbol}</span>}
-                                            sx={                                        
+                                            sx={
                                                 !(isPrimarySort || isSecondarySort) ? {
                                                     '& .MuiTableSortLabel-icon': { opacity: 1 }
                                                 } : {}

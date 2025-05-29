@@ -3,6 +3,7 @@ import { useState } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
 
 import CategoryTable from "../components/Category/CategoryTable";
 import CreateCategory from "../components/Category/CreateCategory";
@@ -27,7 +28,11 @@ const CategoryPage = () => {
                 </Button>
             </Box>
             <Box mb={2} display="flex" justifyContent="flex-start" gap={2}>
-                <Button variant="contained" onClick={handleOpen}>
+                <Button
+                    variant="contained"
+                    onClick={handleOpen}
+                    startIcon={<AddIcon />}
+                >
                     Create Category
                 </Button>
             </Box>

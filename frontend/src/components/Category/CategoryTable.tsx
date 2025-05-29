@@ -59,6 +59,11 @@ const CategoryTable = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
+                            <TableCell align="center" colSpan={2} sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                                Categories
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
                             <TableCell className={styles.headerCell}>Category Name</TableCell>
                             <TableCell className={styles.headerCell} align="right">Actions</TableCell>
                         </TableRow>
