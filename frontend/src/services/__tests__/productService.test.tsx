@@ -89,7 +89,7 @@ describe("productService", () => {
         const result = await productService.setProductInStock(1);
         expect(fetch).toHaveBeenCalledWith(
             expect.stringContaining("/api/products/1/instock"),
-            expect.objectContaining({ method: "POST" })
+            expect.objectContaining({ method: "PUT" })
         );
         expect(result).toEqual({ id: 1, stock: 10 });
     });
@@ -103,7 +103,7 @@ describe("productService", () => {
         const result = await productService.setProductOutOfStock(1);
         expect(fetch).toHaveBeenCalledWith(
             expect.stringContaining("/api/products/1/outofstock"),
-            expect.objectContaining({ method: "POST" })
+            expect.objectContaining({ method: "PUT" })
         );
         expect(result).toEqual({ id: 1, stock: 0 });
     });
