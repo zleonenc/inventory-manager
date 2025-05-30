@@ -55,17 +55,19 @@ This is an Inventory Management Application designed to help users efficiently m
 | Model | Method | Endpoint | Description |
 | --- | --- | --- | --- |
 | Product | GET | /products | List products with support for filtering by name, category, and availability. Supports pagination and sorting. |
-| Product  | PUT | /products/{id} | Update a product (name, category, price, stock, expiration date). |
-| Product  | PUT | /products/{id}/instock | Mark a product as out of stock (no inventory). |
-| Product  | PUT | /products/{id}/outofstock | Mark a product as in stock (restore inventory). |
-| Product  | DEL | /products/{id} | Deletes a product. |
-| Product  | DEL | /products/clear | Deletes all products. |
-| Product  | GET | /products/metrics | Gets inventory metrics as per the requiremnts. |
+| Product | PUT | /products/{id} | Update a product (name, category, price, stock, expiration date). |
+| Product | PUT | /products/{id}/instock | Mark a product as out of stock (no inventory). |
+| Product | PUT | /products/{id}/outofstock | Mark a product as in stock (restore inventory). |
+| Product | DEL | /products/{id} | Deletes a product. |
+| Product | DEL | /products/clear | Deletes all products. |
+| Product | GET | /products/metrics | Gets inventory metrics as per the requiremnts. |
 | Category | GET | /categories | List categories. |
-| Category  | POST | /categories | Create a new category with validation. |
-| Category  | PUT | /categories/{id} | Update a category (name). |
-| Category  | DEL | /categories/{id} | Deletes a category. |
-| Category  | DEL | /categories/clear | Deletes all categories. |
+| Category | POST | /categories | Create a new category with validation. |
+| Category | PUT | /categories/{id} | Update a category (name). |
+| Category | DEL | /categories/{id} | Deletes a category. |
+| Category | DEL | /categories/clear | Deletes all categories. |
+
+**You can quickly test the APIs using the Postman Collection inside the backend folder.**
 
 ---
 

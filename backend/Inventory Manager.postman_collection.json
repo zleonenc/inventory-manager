@@ -1,0 +1,782 @@
+{
+	"info": {
+		"_postman_id": "a31201e8-fcfe-4f1f-9bd3-401a117686db",
+		"name": "Inventory Manager",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44967411"
+	},
+	"item": [
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content array and its properties are valid\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.content).to.be.an('array').that.is.not.empty;",
+									"",
+									"    responseData.content.forEach(function (product) {",
+									"        pm.expect(product).to.have.property('id').that.is.a('number');",
+									"        pm.expect(product).to.have.property('name').that.is.a('string');",
+									"        pm.expect(product).to.have.property('category').that.is.an('object');",
+									"        pm.expect(product).to.have.property('price').that.is.a('number');",
+									"        pm.expect(product).to.have.property('stock').that.is.a('number');",
+									"        pm.expect(product).to.have.property('creationDate').that.is.a('string');",
+									"        pm.expect(product).to.have.property('updateDate').that.is.a('string');",
+									"        pm.expect(product).to.have.property('expirationDate');",
+									"        pm.expect(product).to.have.property('active').that.is.a('boolean');",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Total elements is present and is a non-negative integer\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.have.property('totalElements');",
+									"  pm.expect(responseData.totalElements).to.be.a('number');",
+									"  pm.expect(responseData.totalElements).to.be.at.least(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products?primarySortBy=&primarySortDirection=&categories=&name=&available=&page=&size=&secondarySortBy=&secondarySortDirection=",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "primarySortBy",
+									"value": "",
+									"description": "Primary sort by field"
+								},
+								{
+									"key": "primarySortDirection",
+									"value": "",
+									"description": "Sort direction for the primary sort"
+								},
+								{
+									"key": "categories",
+									"value": "",
+									"description": "List with categories id"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "String / character to match product name"
+								},
+								{
+									"key": "available",
+									"value": "",
+									"description": "null, instock, outofstock"
+								},
+								{
+									"key": "page",
+									"value": "",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "size",
+									"value": "",
+									"description": "Pagination size"
+								},
+								{
+									"key": "secondarySortBy",
+									"value": "",
+									"description": "Secondary sort by field"
+								},
+								{
+									"key": "secondarySortDirection",
+									"value": "",
+									"description": "Sort direction for the secondary sort"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "1",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/products?primarySortBy=category&primarySortDirection=asc&categories=1,2,3,5,6,7&name=&available=&page=1&size=5&secondarySortBy=name&secondarySortDirection=desc",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"products"
+									],
+									"query": [
+										{
+											"key": "primarySortBy",
+											"value": "category",
+											"description": "Primary sort by field"
+										},
+										{
+											"key": "primarySortDirection",
+											"value": "asc",
+											"description": "Sort direction for the primary sort"
+										},
+										{
+											"key": "categories",
+											"value": "1,2,3,5,6,7",
+											"description": "List with categories id"
+										},
+										{
+											"key": "name",
+											"value": "",
+											"description": "String / character to match product name"
+										},
+										{
+											"key": "available",
+											"value": "",
+											"description": "null, instock, outofstock"
+										},
+										{
+											"key": "page",
+											"value": "1",
+											"description": "Page number for pagination"
+										},
+										{
+											"key": "size",
+											"value": "5",
+											"description": "Pagination size"
+										},
+										{
+											"key": "secondarySortBy",
+											"value": "name",
+											"description": "Secondary sort by field"
+										},
+										{
+											"key": "secondarySortDirection",
+											"value": "desc",
+											"description": "Sort direction for the secondary sort"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Banana\",\n    \"price\": 1,\n    \"stock\": 5,\n    \"expirationDate\": \"2024-01-01\",\n    \"categoryId\": 4\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/products/9",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Product OutOfStock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.include.all.keys('id', 'name', 'price', 'stock', 'creationDate', 'updateDate', 'expirationDate', 'active');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Id is a non-negative integer\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.id).to.be.a('number').and.to.be.at.least(0, \"Id should be a non-negative integer\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Price and stock are non-negative numbers\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.price).to.be.a('number').and.to.satisfy((value) => value >= 0, \"Price should be non-negative\");",
+									"    pm.expect(responseData.stock).to.be.a('number').and.to.satisfy((value) => value >= 0, \"Stock should be non-negative\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products/8/outofstock",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"8",
+								"outofstock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Product InStock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('id');",
+									"    pm.expect(responseData).to.have.property('name');",
+									"    pm.expect(responseData).to.have.property('price');",
+									"    pm.expect(responseData).to.have.property('stock');",
+									"    pm.expect(responseData).to.have.property('creationDate');",
+									"    pm.expect(responseData).to.have.property('updateDate');",
+									"    pm.expect(responseData).to.have.property('expirationDate');",
+									"    pm.expect(responseData).to.have.property('active');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Id should be a non-negative integer\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.id).to.be.a('number').and.to.be.at.least(0, \"Id should be a non-negative integer\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Name should be a non-empty string\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.name).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products/8/instock",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"8",
+								"instock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content-Type header is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is within an acceptable range\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Validate the response schema for required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.id).to.exist;",
+									"    pm.expect(responseData.name).to.exist;",
+									"    pm.expect(responseData.price).to.exist;",
+									"    pm.expect(responseData.stock).to.exist;",
+									"    pm.expect(responseData.creationDate).to.exist;",
+									"    pm.expect(responseData.updateDate).to.exist;",
+									"    pm.expect(responseData.active).to.exist;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Price and stock are non-negative integers\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"  ",
+									"    pm.expect(responseData.price).to.be.a('number');",
+									"    pm.expect(responseData.price).to.be.at.least(0, \"Price should be non-negative\");",
+									"    ",
+									"    pm.expect(responseData.stock).to.be.a('number');",
+									"    pm.expect(responseData.stock).to.be.at.least(0, \"Stock should be non-negative\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Bananas\",\n    \"price\": 1,\n    \"stock\": 5,\n    \"expirationDate\": \"2026-02-01\",\n    \"categoryId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/products",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response body is null\", function () {",
+									"    const responseData = xml2Json(pm.response.text());",
+									"    ",
+									"    pm.expect(responseData).to.be.null;",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products/20",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"20"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Products",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products/clear",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"clear"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Category",
+			"item": [
+				{
+					"name": "Create Category",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Clothes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/categories",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content-Type header is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Validate the schema for each category object - id, name, creationDate, updateDate, and active\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    responseData.forEach(category => {",
+									"        pm.expect(category).to.be.an('object');",
+									"        pm.expect(category).to.have.property('id');",
+									"        pm.expect(category).to.have.property('name');",
+									"        pm.expect(category).to.have.property('creationDate');",
+									"        pm.expect(category).to.have.property('updateDate');",
+									"        pm.expect(category).to.have.property('active');",
+									"    });",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/categories",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Categories",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/categories/clear",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"categories",
+								"clear"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Computers\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/categories/2",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"categories",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/categories/4",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"categories",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Metrics",
+			"item": [
+				{
+					"name": "Get Metrics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is within acceptable range\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+									"",
+									"    responseData.forEach(function(item) {",
+									"        pm.expect(item).to.have.property('categoryId');",
+									"        pm.expect(item).to.have.property('categoryName');",
+									"        pm.expect(item).to.have.property('totalStock');",
+									"        pm.expect(item).to.have.property('totalValue');",
+									"        pm.expect(item).to.have.property('averagePrice');",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"CategoryId is a non-negative integer\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    responseData.forEach(function(product) {",
+									"        pm.expect(product.categoryId).to.be.a('number').and.to.be.at.least(0);",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Average price is a non-negative number\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    responseData.forEach(function(product) {",
+									"        pm.expect(product.averagePrice).to.be.a('number');",
+									"        pm.expect(product.averagePrice).to.be.at.least(0);",
+									"    });",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/products/metrics",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:9090/api",
+			"type": "string"
+		}
+	]
+}
