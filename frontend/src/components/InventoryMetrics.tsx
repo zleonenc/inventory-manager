@@ -6,9 +6,20 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-import { Metric } from "../types/Metric";
-import { formatCurrency, formatStock } from "../utils/format";
-import { useProductContext } from "../context/ProductContext";
+import {
+    useProductContext
+} from "../context/ProductContext";
+
+import {
+    formatCurrency,
+    formatStock
+} from "../utils/format";
+
+import {
+    Metric
+} from "../types/Metric";
+
+
 import styles from "./Product/ProductTable.module.css";
 
 interface HeaderCellConfig {

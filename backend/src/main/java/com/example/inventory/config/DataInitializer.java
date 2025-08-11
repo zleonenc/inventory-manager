@@ -5,12 +5,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import com.example.inventory.model.Category;
 import com.example.inventory.service.CategoryFileStorageService;
-import com.example.inventory.repository.CategoryRepository;
-import com.example.inventory.model.Product;
 import com.example.inventory.service.ProductFileStorageService;
+import com.example.inventory.repository.CategoryRepository;
 import com.example.inventory.repository.ProductRepository;
+import com.example.inventory.model.Category;
+import com.example.inventory.model.Product;
 
 @Component
 public class DataInitializer implements CommandLineRunner {

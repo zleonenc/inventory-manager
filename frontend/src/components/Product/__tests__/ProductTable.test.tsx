@@ -1,8 +1,19 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+
+import {
+    render,
+    screen
+} from '@testing-library/react';
+
+import {
+    ProductProvider
+} from '../../../context/ProductContext';
+
+import {
+    CategoryProvider
+} from '../../../context/CategoryContext';
+
 import ProductTable from '../ProductTable';
-import { ProductProvider } from '../../../context/ProductContext';
-import { CategoryProvider } from '../../../context/CategoryContext';
 
 test('renders ProductTable headers', () => {
     render(

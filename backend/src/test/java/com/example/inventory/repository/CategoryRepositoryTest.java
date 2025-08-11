@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.inventory.testutil.builders.CategoryBuilder.aCategory;
 import com.example.inventory.model.Category;
 
 class CategoryRepositoryTest {
@@ -23,7 +24,7 @@ class CategoryRepositoryTest {
 
     @Test
     void save_Category_returnsSavedCategory() {
-        Category category = new Category("Category A");
+        Category category = aCategory().withId(null).build();
         Category saved = repository.save(category);
 
         assertNotNull(saved);
@@ -33,7 +34,7 @@ class CategoryRepositoryTest {
 
     @Test
     void updateById_ExistingId_returnsUpdatedCategory() {
-        Category category = new Category("Category A");
+        Category category = aCategory().withId(null).build();
         Category saved = repository.save(category);
 
         saved.setName("Category B");
@@ -44,7 +45,7 @@ class CategoryRepositoryTest {
 
     @Test
     void findById_FoundId_returnsCategory() {
-        Category category = new Category("Category A");
+        Category category = aCategory().withId(null).build();
         Category saved = repository.save(category);
 
         Optional<Category> found = repository.findById(saved.getId());
@@ -61,7 +62,7 @@ class CategoryRepositoryTest {
 
     @Test
     void deleteById_FoundId_returnsTrue() {
-        Category category = new Category("Category A");
+        Category category = aCategory().withId(null).build();
         Category saved = repository.save(category);
 
         boolean deleted = repository.deleteById(saved.getId());
@@ -77,8 +78,8 @@ class CategoryRepositoryTest {
 
     @Test
     void getAll_returnsAllCategories() {
-        Category category1 = new Category("Category A");
-        Category category2 = new Category("Category B");
+        Category category1 = aCategory().withId(null).build();
+        Category category2 = aCategory().withId(null).withName("Category B").build();
         repository.save(category1);
         repository.save(category2);
 
@@ -92,7 +93,7 @@ class CategoryRepositoryTest {
 
     @Test
     void clear_removesAllCategories() {
-        Category category1 = new Category("Category A");
+        Category category1 = aCategory().withId(null).build();
         repository.save(category1);
 
         repository.clear();
@@ -101,8 +102,8 @@ class CategoryRepositoryTest {
 
     @Test
     void loadCategories_loadsCategoriesAndUpdatesIdGenerator() {
-        Category category1 = new Category("Category A");
-        Category category2 = new Category("Category B");
+        Category category1 = aCategory().withId(null).build();
+        Category category2 = aCategory().withId(null).withName("Category B").build();
         repository.loadCategories(List.of(category1, category2));
 
         List<Category> allCategories = repository.getAll();

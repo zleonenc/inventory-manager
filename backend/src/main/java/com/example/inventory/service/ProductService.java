@@ -6,16 +6,16 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.example.inventory.model.Product;
+import static com.example.inventory.config.ErrorMessages.*;
+import com.example.inventory.exception.NotFoundException;
 import com.example.inventory.repository.ProductRepository;
-import com.example.inventory.dto.InventoryMetricsDTO;
 import com.example.inventory.dto.ProductDTO;
-import com.example.inventory.model.Category;
 import com.example.inventory.dto.PagedResponse;
+import com.example.inventory.model.Category;
+import com.example.inventory.model.Product;
 
 @Service
 public class ProductService {
@@ -23,6 +23,29 @@ public class ProductService {
     private final CategoryService categoryService;
 
     private static final int DEFAULT_RESTOCK = 10;
+    private static final String AVAIL_IN_STOCK = "instock";
+    private static final String AVAIL_OUT_OF_STOCK = "outofstock";
+
+    private static final String SORT_NAME = "name";
+    private static final String SORT_PRICE = "price";
+    private static final String SORT_CATEGORY = "category";
+    private static final String SORT_STOCK = "stock";
+    private static final String SORT_EXPIRATION_DATE = "expirationdate";
+
+    private static final Map<String, Comparator<Product>> SORT_REGISTRY = Map.of(
+            SORT_NAME,
+            Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER),
+            SORT_PRICE,
+            Comparator.comparingDouble(Product::getPrice),
+            SORT_CATEGORY,
+            Comparator.comparing(
+                    p -> (p.getCategory() != null && p.getCategory().getName() != null) ? p.getCategory().getName()
+                            : "",
+                    String.CASE_INSENSITIVE_ORDER),
+            SORT_STOCK,
+            Comparator.comparingDouble(Product::getStock),
+            SORT_EXPIRATION_DATE,
+            Comparator.comparing(Product::getExpirationDate, Comparator.nullsLast(LocalDate::compareTo)));
 
     public ProductService(ProductRepository productRepository, CategoryService categoryService) {
         this.productRepository = productRepository;
@@ -31,13 +54,14 @@ public class ProductService {
 
     public Product saveFromDTO(ProductDTO productDTO) {
         Category category = categoryService.getCategoryById(productDTO.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
-        Product product = new Product(
-                productDTO.getName(),
-                category,
-                productDTO.getPrice(),
-                productDTO.getStock(),
-                productDTO.getExpirationDate());
+                .orElseThrow(() -> new IllegalArgumentException(INVALID_CATEGORY_ID));
+    Product product = Product.builder()
+        .name(productDTO.getName())
+        .category(category)
+        .price(productDTO.getPrice())
+        .stock(productDTO.getStock())
+        .expirationDate(productDTO.getExpirationDate())
+        .build();
 
         Product savedProduct = productRepository.save(product);
         return savedProduct;
@@ -65,8 +89,8 @@ public class ProductService {
                                 (p.getCategory() != null && categories.contains(p.getCategory().getId())))
                         &&
                         (available == null || available.isEmpty() ||
-                                ("instock".equalsIgnoreCase(available) && p.getStock() > 0) ||
-                                ("outofstock".equalsIgnoreCase(available) && p.getStock() == 0)))
+                                (AVAIL_IN_STOCK.equalsIgnoreCase(available) && p.getStock() > 0) ||
+                                (AVAIL_OUT_OF_STOCK.equalsIgnoreCase(available) && p.getStock() == 0)))
                 .collect(Collectors.toList());
 
         // Sorting
@@ -95,32 +119,10 @@ public class ProductService {
         }
 
         boolean ascending = (direction == null || "asc".equalsIgnoreCase(direction));
-        Comparator<Product> fieldComparator;
-
-        switch (sortByField.toLowerCase()) {
-            case "name":
-                fieldComparator = Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER);
-                break;
-            case "price":
-                fieldComparator = Comparator.comparingDouble(Product::getPrice);
-                break;
-            case "category":
-                fieldComparator = Comparator.comparing(
-                        p -> (p.getCategory() != null && p.getCategory().getName() != null) ? p.getCategory().getName()
-                                : "",
-                        String.CASE_INSENSITIVE_ORDER);
-                break;
-            case "stock":
-                fieldComparator = Comparator.comparingDouble(Product::getStock);
-                break;
-            case "expirationdate":
-                fieldComparator = Comparator.comparing(Product::getExpirationDate,
-                        Comparator.nullsLast(LocalDate::compareTo));
-                break;
-            default:
-                return (p1, p2) -> 0;
+        Comparator<Product> fieldComparator = SORT_REGISTRY.get(sortByField.toLowerCase());
+        if (fieldComparator == null) {
+            return (p1, p2) -> 0;
         }
-
         return ascending ? fieldComparator : fieldComparator.reversed();
     }
 
@@ -146,7 +148,7 @@ public class ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
 
         if (productOptional.isEmpty() || !productOptional.get().isActive()) {
-            throw new IllegalArgumentException("Product not found with ID: " + id);
+            throw new NotFoundException(String.format(PRODUCT_NOT_FOUND, id));
         }
 
         Product product = productOptional.get();
@@ -159,10 +161,13 @@ public class ProductService {
 
     public Product updateProductById(Long id, ProductDTO productDTO) {
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException(String.format(PRODUCT_NOT_FOUND, id)));
+        if (!existingProduct.isActive()) {
+            throw new NotFoundException(String.format(PRODUCT_NOT_FOUND, id));
+        }
 
         Category category = categoryService.getCategoryById(productDTO.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+                .orElseThrow(() -> new IllegalArgumentException(INVALID_CATEGORY_ID));
 
         existingProduct.setName(productDTO.getName());
         existingProduct.setCategory(category);
@@ -178,7 +183,10 @@ public class ProductService {
 
     public Product markProductAsOutOfStock(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException(String.format(PRODUCT_NOT_FOUND, id)));
+        if (!product.isActive()) {
+            throw new NotFoundException(String.format(PRODUCT_NOT_FOUND, id));
+        }
 
         product.setStock(0);
         product.setUpdateDate(LocalDate.now());
@@ -189,7 +197,10 @@ public class ProductService {
 
     public Product markProductAsInStock(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException(String.format(PRODUCT_NOT_FOUND, id)));
+        if (!product.isActive()) {
+            throw new NotFoundException(String.format(PRODUCT_NOT_FOUND, id));
+        }
 
         product.setStock(DEFAULT_RESTOCK);
         product.setUpdateDate(LocalDate.now());
@@ -200,59 +211,5 @@ public class ProductService {
 
     public void clearProducts() {
         productRepository.clear();
-    }
-
-    public List<InventoryMetricsDTO> getInventoryMetrics() {
-        List<Product> allProducts = getAllProducts().stream()
-                .filter(p -> p.getStock() > 0)
-                .collect(Collectors.toList());
-
-        Map<Long, List<Product>> groupedByCategoryId = allProducts.stream()
-                .filter(p -> p.getCategory() != null && p.getCategory().getId() != null)
-                .collect(Collectors.groupingBy(p -> p.getCategory().getId()));
-
-        List<InventoryMetricsDTO> metrics = new ArrayList<>();
-
-        for (Map.Entry<Long, List<Product>> entry : groupedByCategoryId.entrySet()) {
-            Long categoryId = entry.getKey();
-            List<Product> productsInCategory = entry.getValue();
-            String categoryName = productsInCategory.get(0).getCategory().getName();
-            double totalStock = productsInCategory.stream()
-                    .mapToDouble(Product::getStock)
-                    .sum();
-
-            double totalValue = productsInCategory.stream()
-                    .mapToDouble(p -> p.getPrice() * p.getStock())
-                    .sum();
-
-            double averagePrice = productsInCategory.stream()
-                    .mapToDouble(Product::getPrice)
-                    .average()
-                    .orElse(0.0);
-
-            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, totalStock, totalValue,
-                    averagePrice);
-            metrics.add(metric);
-        }
-
-        // Overall metrics
-        double overallTotalStock = allProducts.stream()
-                .mapToDouble(Product::getStock)
-                .sum();
-        double overallTotalValue = allProducts.stream()
-                .mapToDouble(p -> p.getPrice() * p.getStock())
-                .sum();
-        double overallAveragePrice = allProducts.stream()
-                .mapToDouble(Product::getPrice)
-                .average()
-                .orElse(0.0);
-
-        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L, "Overall", overallTotalStock,
-                overallTotalValue,
-                overallAveragePrice);
-
-        metrics.add(overallMetrics);
-
-        return metrics;
     }
 }

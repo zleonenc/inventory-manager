@@ -1,10 +1,14 @@
-import { useState } from "react";
+import {
+    useState
+} from "react";
 
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CategoryPage from "./CategoryPage";
+
 import AddIcon from "@mui/icons-material/Add";
+
+import CategoryPage from "./CategoryPage";
 
 import ProductFilter from "../components/Product/ProductFilter";
 import ProductTable from "../components/Product/ProductTable";

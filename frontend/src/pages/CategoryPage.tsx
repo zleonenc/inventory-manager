@@ -1,14 +1,19 @@
-import { useState } from "react";
+import {
+    useState
+} from "react";
 
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+
 import AddIcon from "@mui/icons-material/Add";
 
+import ProductPage from "./ProductPage";
+
+import TopBar from "../components/TopBar";
 import CategoryTable from "../components/Category/CategoryTable";
 import CreateCategory from "../components/Category/CreateCategory";
-import ProductPage from "./ProductPage";
-import TopBar from "../components/TopBar";
+
 
 const CategoryPage = () => {
     const [open, setOpen] = useState(false);

@@ -7,23 +7,24 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
+import static com.example.inventory.testutil.builders.ProductDTOBuilder.aProductDTO;
+import static com.example.inventory.testutil.builders.ProductBuilder.aProduct;
 import com.example.inventory.dto.PagedResponse;
 import com.example.inventory.dto.ProductDTO;
-import com.example.inventory.model.Category;
 import com.example.inventory.model.Product;
 import com.example.inventory.service.ProductService;
+import com.example.inventory.exception.NotFoundException;
+import com.example.inventory.testutil.ProductQueryParams;
 
 class ProductControllerTest {
 
@@ -33,14 +34,14 @@ class ProductControllerTest {
     @BeforeEach
     void setUp() {
         service = mock(ProductService.class);
-        controller = new ProductController(service);
+        controller = new ProductController(service, null);
     }
 
     @Test
     void createProduct_returnsSavedProduct() {
-        ProductDTO dto = new ProductDTO("Product A", 10.0, 10, 1L, LocalDate.now());
-        Product saved = new Product("Product A", new Category(1L, "Category A"), 10.0, 10, LocalDate.now());
-        saved.setId(1L);
+        LocalDate date = LocalDate.of(2025, 1, 1);
+        ProductDTO dto = aProductDTO().expiringOn(date).build();
+        Product saved = aProduct().withId(1L).expiringOn(date).build();
 
         when(service.saveFromDTO(ArgumentMatchers.any(ProductDTO.class))).thenReturn(saved);
 
@@ -53,85 +54,67 @@ class ProductControllerTest {
 
     @Test
     void getFilteredSortedProducts_returnsPagedResponse() {
-        Product product1 = new Product(1L, "Product A", new Category(1L, "Category A"), 1.0, 1, LocalDate.now());
-        Product product2 = new Product(2L, "Product B", new Category(2L, "Category B"), 2.0, 2, LocalDate.now());
+        Product product1 = aProduct().withId(1L).build();
+        Product product2 = aProduct().withId(2L).withName("Product B").build();
         List<Product> products = List.of(product1, product2);
         PagedResponse<Product> paged = new PagedResponse<>(products, 2);
 
         when(service.getFilteredSortedProducts(
                 any(), any(), any(), anyInt(), anyInt(), any(), any(), any(), any())).thenReturn(paged);
 
-        ResponseEntity<PagedResponse<Product>> response = controller.getFilteredSortedProducts(
-                null, // name
-                null, // categories
-                null, // available
-                0, // page
-                10, // size
-                null, // primarySortBy
-                null, // primarySortDirection
-                null, // secondarySortBy
-                null // secondarySortDirection
-        );
+        ResponseEntity<PagedResponse<Product>> response = ProductQueryParams.defaults().page(0).size(10)
+                .execute(controller);
 
         assertEquals(200, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().getContent().size());
+        PagedResponse<Product> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(2, body.getContent().size());
         verify(service).getFilteredSortedProducts(
-                null, null, null, 0, 10, null, null, null, null);
+                null, null, null, 0, 10, null, "asc", null, "asc");
     }
 
     @Test
     void updateProductById_found_returnsUpdated() {
-        ProductDTO dto = new ProductDTO("Updated", 20.0, 10.0, 1L, LocalDate.now());
-        Product updated = new Product(1L, "Updated", new Category(1L, "Category A"), 20.0, 10, LocalDate.now());
+        LocalDate date = LocalDate.of(2025, 2, 2);
+        ProductDTO dto = aProductDTO().withName("Updated").withPrice(20.0).expiringOn(date).build();
+        Product updated = aProduct().withId(1L).withName("Updated").withPrice(20.0).expiringOn(date).build();
 
-        when(service.getProductById(1L)).thenReturn(Optional.of(updated));
         when(service.updateProductById(1L, dto)).thenReturn(updated);
 
         ResponseEntity<Product> response = controller.updateProduct(1L, dto);
 
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(updated, response.getBody());
-        assertEquals(20.0, response.getBody().getPrice());
-        verify(service).getProductById(1L);
+        Product bodyUpdated = response.getBody();
+        assertNotNull(bodyUpdated);
+        assertEquals(updated, bodyUpdated);
+        assertEquals(20.0, bodyUpdated.getPrice());
         verify(service).updateProductById(1L, dto);
     }
 
     @Test
-    void updateProductById_notFound_returnsNotFound() {
-        ProductDTO dto = new ProductDTO("Updated", 20.0, 10.0, 1L, LocalDate.now());
+    void updateProductById_NotFound_throwsNotFoundException() {
+        ProductDTO dto = aProductDTO().build();
+        when(service.updateProductById(1L, dto)).thenThrow(new NotFoundException("not found"));
 
-        when(service.getProductById(1L)).thenReturn(Optional.empty());
-
-        ResponseEntity<Product> response = controller.updateProduct(1L, dto);
-
-        assertEquals(404, response.getStatusCode().value());
-        verify(service).getProductById(1L);
-        verify(service, never()).updateProductById(anyLong(), any(ProductDTO.class));
+        assertThrows(NotFoundException.class, () -> controller.updateProduct(1L, dto));
+        verify(service).updateProductById(1L, dto);
     }
 
     @Test
     void deleteProductById_found_returnsNoContent() {
-        Product product = new Product(1L, "Product A", new Category(1L, "Category A"), 10.0, 10, LocalDate.now());
-
-        when(service.getProductById(1L)).thenReturn(Optional.of(product));
-
         ResponseEntity<Void> response = controller.deleteProduct(1L);
 
         assertEquals(204, response.getStatusCode().value());
-        verify(service).getProductById(1L);
         verify(service).deleteProductById(1L);
     }
 
     @Test
-    void deleteProductById_notFound_returnsNotFound() {
-        when(service.getProductById(1L)).thenReturn(Optional.empty());
+    void deleteProductById_NotFound_throwsNotFoundException() {
+        org.mockito.Mockito.doThrow(new NotFoundException("not found"))
+                .when(service).deleteProductById(1L);
 
-        ResponseEntity<Void> response = controller.deleteProduct(1L);
-
-        assertEquals(404, response.getStatusCode().value());
-        verify(service).getProductById(1L);
-        verify(service, never()).deleteProductById(anyLong());
+        assertThrows(NotFoundException.class, () -> controller.deleteProduct(1L));
+        verify(service).deleteProductById(1L);
     }
 
     @Test

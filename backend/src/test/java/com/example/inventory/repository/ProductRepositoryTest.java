@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.inventory.testutil.builders.ProductBuilder.aProduct;
 import com.example.inventory.model.Product;
 
 class ProductRepositoryTest {
@@ -23,9 +24,7 @@ class ProductRepositoryTest {
 
     @Test
     void save_Product_returnsSavedProduct() {
-        Product product = new Product();
-        product.setName("Product A");
-        product.setPrice(1000.00);
+        Product product = aProduct().withPrice(1000.00).build();
 
         Product saved = repository.save(product);
         assertNotNull(saved);
@@ -37,9 +36,7 @@ class ProductRepositoryTest {
 
     @Test
     void updateById_ExistingId_returnsUpdatedProduct() {
-        Product product = new Product();
-        product.setName("Product A");
-        product.setPrice(1000.00);
+        Product product = aProduct().withPrice(1000.00).build();
 
         Product saved = repository.save(product);
         saved.setName("Product B");
@@ -54,9 +51,7 @@ class ProductRepositoryTest {
 
     @Test
     void findById_FoundId_returnsProduct() {
-        Product product = new Product();
-        product.setName("Product A");
-        product.setPrice(1000.00);
+        Product product = aProduct().withPrice(1000.00).build();
 
         Product saved = repository.save(product);
         Optional<Product> found = repository.findById(saved.getId());
@@ -74,7 +69,7 @@ class ProductRepositoryTest {
 
     @Test
     void deleteById_FoundId_returnsTrue() {
-        Product product = new Product();
+        Product product = aProduct().build();
         Product saved = repository.save(product);
 
         boolean deleted = repository.deleteById(saved.getId());
@@ -90,10 +85,8 @@ class ProductRepositoryTest {
 
     @Test
     void getAll_ReturnsAllProducts() {
-        Product product1 = new Product();
-        product1.setName("Product A");
-        Product product2 = new Product();
-        product2.setName("Product B");
+        Product product1 = aProduct().withName("Product A").build();
+        Product product2 = aProduct().withName("Product B").build();
 
         repository.save(product1);
         repository.save(product2);
@@ -108,8 +101,8 @@ class ProductRepositoryTest {
 
     @Test
     void clear_removesAllProducts() {
-        Product product1 = new Product();
-        Product product2 = new Product();
+        Product product1 = aProduct().build();
+        Product product2 = aProduct().build();
         repository.save(product1);
         repository.save(product2);
 
@@ -120,10 +113,8 @@ class ProductRepositoryTest {
 
     @Test
     void loadProducts_loadsProductsAndUpdatesIdGenerator() {
-        Product product1 = new Product();
-        product1.setName("Product A");
-        Product product2 = new Product();
-        product2.setName("Product B");
+        Product product1 = aProduct().withName("Product A").build();
+        Product product2 = aProduct().withName("Product B").build();
 
         repository.loadProducts(List.of(product1, product2));
 

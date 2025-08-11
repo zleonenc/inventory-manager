@@ -6,8 +6,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.inventory.model.Category;
+import static com.example.inventory.config.ErrorMessages.*;
+import com.example.inventory.exception.NotFoundException;
 import com.example.inventory.repository.CategoryRepository;
+import com.example.inventory.model.Category;
 
 @Service
 public class CategoryService {
@@ -18,9 +20,9 @@ public class CategoryService {
     }
 
     public Category saveCategory(Category category) {
-        if (categoryRepository.getAll().stream().filter(cat -> cat.getActive())
+        if (categoryRepository.getAll().stream().filter(cat -> cat.isActive())
                 .anyMatch(existingCategory -> existingCategory.getName().equalsIgnoreCase(category.getName()))) {
-            throw new IllegalArgumentException("Category with the same name already exists");
+            throw new IllegalArgumentException(DUPLICATE_CATEGORY_NAME);
         }
 
         Category savedCategory = categoryRepository.save(category);
@@ -29,7 +31,7 @@ public class CategoryService {
 
     public List<Category> getAllActiveCategories() {
         return categoryRepository.getAll().stream()
-                .filter(Category::getActive)
+                .filter(Category::isActive)
                 .toList();
     }
 
@@ -39,21 +41,21 @@ public class CategoryService {
 
     public Optional<Category> getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .filter(Category::getActive);
+                .filter(Category::isActive);
     }
 
     public Category updateCategoryById(Long id, Category category) {
         Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+                .orElseThrow(() -> new NotFoundException(String.format(CATEGORY_NOT_FOUND, id)));
 
-        if (categoryRepository.getAll().stream().filter(cat -> cat.getActive())
+        if (categoryRepository.getAll().stream().filter(cat -> cat.isActive())
                 .anyMatch(existingCategoryAux -> existingCategoryAux.getName().equalsIgnoreCase(category.getName())
                         && !existingCategoryAux.getId().equals(id))) {
-            throw new IllegalArgumentException("Category with the same name already exists");
+            throw new IllegalArgumentException(DUPLICATE_CATEGORY_NAME);
         }
 
-        if (!existingCategory.getActive()) {
-            throw new IllegalArgumentException("Category does not exist");
+        if (!existingCategory.isActive()) {
+            throw new NotFoundException(String.format(CATEGORY_NOT_FOUND, id));
         }
 
         existingCategory.setName(category.getName());
@@ -65,10 +67,10 @@ public class CategoryService {
 
     public void deleteCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+                .orElseThrow(() -> new NotFoundException(String.format(CATEGORY_NOT_FOUND, id)));
 
-        if (!category.getActive()) {
-            throw new IllegalArgumentException("Category does not exist");
+        if (!category.isActive()) {
+            throw new NotFoundException(String.format(CATEGORY_NOT_FOUND, id));
         } else {
             category.setActive(false);
             category.setUpdateDate(LocalDate.now());

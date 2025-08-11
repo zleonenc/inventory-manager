@@ -1,5 +1,8 @@
 import * as productService from "../productService";
-import { ProductDTO } from "../../types/ProductDTO";
+
+import {
+    ProductDTO
+} from "../../types/ProductDTO";
 
 global.fetch = jest.fn();
 
@@ -18,7 +21,7 @@ describe("productService", () => {
         };
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => mockResponse,
+            text: async () => JSON.stringify(mockResponse),
         });
 
         const params = {
@@ -36,6 +39,7 @@ describe("productService", () => {
         const result = await productService.getProducts(params);
         expect(fetch).toHaveBeenCalledWith(
             expect.stringContaining("/api/products?name=Product&categories=1%2C2&available=instock&page=0&size=2&primarySortBy=name&primarySortDirection=asc&secondarySortBy=null&secondarySortDirection=null"),
+            expect.objectContaining({ method: "GET" })
         );
         expect(result).toEqual(mockResponse);
     });
@@ -44,7 +48,7 @@ describe("productService", () => {
         const dto: ProductDTO = { name: "Product A", categoryId: 1, stock: 10, price: 10, expirationDate: null };
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ id: 1, ...dto }),
+            text: async () => JSON.stringify({ id: 1, ...dto }),
         });
 
         const result = await productService.createProduct(dto);
@@ -59,7 +63,7 @@ describe("productService", () => {
         const dto: ProductDTO = { name: "Updated Product", categoryId: 2, stock: 5, price: 20, expirationDate: "2025-01-01" };
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ id: 1, ...dto }),
+            text: async () => JSON.stringify({ id: 1, ...dto }),
         });
 
         const result = await productService.updateProduct(1, dto);
@@ -71,7 +75,7 @@ describe("productService", () => {
     });
 
     it("deleteProduct sends DELETE", async () => {
-        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
+        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, text: async () => "" });
 
         await productService.deleteProduct(1);
         expect(fetch).toHaveBeenCalledWith(
@@ -83,7 +87,7 @@ describe("productService", () => {
     it("setProductInStock sends POST and returns product", async () => {
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ id: 1, stock: 10 }),
+            text: async () => JSON.stringify({ id: 1, stock: 10 }),
         });
 
         const result = await productService.setProductInStock(1);
@@ -97,7 +101,7 @@ describe("productService", () => {
     it("setProductOutOfStock sends POST and returns product", async () => {
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ id: 1, stock: 0 }),
+            text: async () => JSON.stringify({ id: 1, stock: 0 }),
         });
 
         const result = await productService.setProductOutOfStock(1);
@@ -116,16 +120,20 @@ describe("productService", () => {
         ];
         (fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => mockMetrics,
+            text: async () => JSON.stringify(mockMetrics),
         });
 
         const result = await productService.getInventoryMetrics();
-        expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/products/metrics"));
+        expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/products/metrics"), expect.objectContaining({ method: "GET" }));
         expect(result).toEqual(mockMetrics);
     });
 
-    it("throws on failed fetch", async () => {
-        (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
-        await expect(productService.getProducts()).rejects.toThrow("Failed to fetch products");
+    it("throws ApiError with status/message on failed fetch", async () => {
+        (fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            status: 404,
+            text: async () => JSON.stringify({ message: "Not found" }),
+        });
+        await expect(productService.getProducts()).rejects.toMatchObject({ status: 404, message: "Not found" });
     });
 });

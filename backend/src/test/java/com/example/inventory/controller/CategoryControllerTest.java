@@ -1,17 +1,24 @@
 package com.example.inventory.controller;
 
-import com.example.inventory.model.Category;
-import com.example.inventory.service.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.List;
+
+import static com.example.inventory.testutil.builders.CategoryBuilder.aCategory;
+import com.example.inventory.exception.NotFoundException;
+import com.example.inventory.service.CategoryService;
+import com.example.inventory.model.Category;
 
 class CategoryControllerTest {
 
@@ -26,8 +33,8 @@ class CategoryControllerTest {
 
     @Test
     void createCategory_returnsSavedCategory() {
-        Category input = new Category("Category A");
-        Category saved = new Category(1L, "Category A");
+        Category input = aCategory().withId(null).build();
+        Category saved = aCategory().withId(1L).build();
 
         when(service.saveCategory(ArgumentMatchers.any(Category.class))).thenReturn(saved);
 
@@ -40,70 +47,59 @@ class CategoryControllerTest {
 
     @Test
     void getAllActiveCategories_returnsList() {
-        Category category1 = new Category(1L, "Category A");
-        Category category2 = new Category(2L, "Category B");
+        Category category1 = aCategory().withId(1L).build();
+        Category category2 = aCategory().withId(2L).build();
 
         when(service.getAllActiveCategories()).thenReturn(List.of(category1, category2));
 
         ResponseEntity<List<Category>> response = controller.getAllActiveCategories();
 
         assertEquals(200, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
+        List<Category> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(2, body.size());
         verify(service).getAllActiveCategories();
     }
 
     @Test
     void updateCategory_existing_returnsUpdated() {
-        Category input = new Category(1L, "Category A");
-        Category updated = new Category(1L, "Category B");
+        Category input = aCategory().withId(1L).build();
+        Category updated = aCategory().withId(1L).withName("Category B").build();
 
-        when(service.getCategoryById(1L)).thenReturn(Optional.of(updated));
         when(service.updateCategoryById(1L, input)).thenReturn(updated);
 
         ResponseEntity<Category> response = controller.updateCategory(1L, input);
 
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(updated, response.getBody());
-        verify(service).getCategoryById(1L);
+        Category body = response.getBody();
+        assertNotNull(body);
+        assertEquals(updated, body);
         verify(service).updateCategoryById(1L, input);
     }
 
     @Test
-    void updateCategory_notFound_returnsNotFound() {
-        Category input = new Category(1L, "Category A");
+    void updateCategory_NotFound_throwsNotFoundException() {
+        Category input = aCategory().withId(1L).build();
+        when(service.updateCategoryById(1L, input)).thenThrow(new NotFoundException("not found"));
 
-        when(service.getCategoryById(1L)).thenReturn(Optional.empty());
-
-        ResponseEntity<Category> response = controller.updateCategory(1L, input);
-
-        assertEquals(404, response.getStatusCode().value());
-        verify(service).getCategoryById(1L);
-        verify(service, never()).updateCategoryById(anyLong(), any(Category.class));
+        assertThrows(NotFoundException.class, () -> controller.updateCategory(1L, input));
+        verify(service).updateCategoryById(1L, input);
     }
 
     @Test
     void deleteCategory_existing_returnsNoContent() {
-        Category existing = new Category(1L, "Category A");
-
-        when(service.getCategoryById(1L)).thenReturn(Optional.of(existing));
-
         ResponseEntity<Void> response = controller.deleteCategory(1L);
 
         assertEquals(204, response.getStatusCode().value());
-        verify(service).getCategoryById(1L);
         verify(service).deleteCategoryById(1L);
     }
 
     @Test
-    void deleteCategory_notFound_returnsNotFound() {
-        when(service.getCategoryById(1L)).thenReturn(Optional.empty());
+    void deleteCategory_NotFound_throwsNotFoundException() {
+        doThrow(new NotFoundException("not found")).when(service).deleteCategoryById(1L);
 
-        ResponseEntity<Void> response = controller.deleteCategory(1L);
-
-        assertEquals(404, response.getStatusCode().value());
-        verify(service).getCategoryById(1L);
-        verify(service, never()).deleteCategoryById(anyLong());
+        assertThrows(NotFoundException.class, () -> controller.deleteCategory(1L));
+        verify(service).deleteCategoryById(1L);
     }
 
     @Test

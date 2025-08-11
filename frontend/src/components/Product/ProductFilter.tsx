@@ -1,4 +1,6 @@
-import { useState } from "react";
+import {
+    useState
+} from "react";
 
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -8,24 +10,30 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import OutlinedInput from "@mui/material/OutlinedInput";
+
 import SearchIcon from "@mui/icons-material/Search";
 
-import { useProductContext } from "../../context/ProductContext";
-import { useCategoryContext } from "../../context/CategoryContext";
+import {
+    useProductContext
+} from "../../context/ProductContext";
+import {
+    useCategoryContext
+} from "../../context/CategoryContext";
 
 const ProductFilter = () => {
-    const { fetchProducts } = useProductContext();
+    const { setLastFilters } = useProductContext();
     const { categories } = useCategoryContext();
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryIds, setCategoryIds] = useState<number[]>([]);
     const [availability, setAvailability] = useState("");
 
     const handleFilter = () => {
-        fetchProducts({
+        const filters = {
             name: searchTerm,
             categories: categoryIds,
             available: availability,
-        });
+        };
+        setLastFilters(filters);
     };
 
     const handleCategoryChange = (event: any) => {

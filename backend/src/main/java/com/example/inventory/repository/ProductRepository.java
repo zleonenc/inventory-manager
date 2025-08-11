@@ -18,6 +18,17 @@ public class ProductRepository {
 
     public Product save(Product product) {
         product.setId(idGenerator.incrementAndGet());
+        // Ensure reasonable defaults on create
+        if (product.getCreationDate() == null) {
+            product.setCreationDate(java.time.LocalDate.now());
+        }
+        if (product.getUpdateDate() == null) {
+            product.setUpdateDate(product.getCreationDate());
+        }
+        // Default to active if not explicitly set
+        if (!product.isActive()) {
+            product.setActive(true);
+        }
         data.put(product.getId(), product);
         return product;
     }

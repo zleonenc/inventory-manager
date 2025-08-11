@@ -1,4 +1,10 @@
-import { useState, useEffect } from "react";
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    useRef
+} from "react";
 
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -16,63 +22,39 @@ import Typography from "@mui/material/Typography";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import Pagination from "@mui/material/Pagination";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import Tooltip from "@mui/material/Tooltip";
-import IconButton from "@mui/material/IconButton";
-import CancelIcon from "@mui/icons-material/Cancel";
-import dayjs from "dayjs";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 
-import { useProductContext } from "../../context/ProductContext";
-import EditProduct from "./EditProduct";
-import { Product } from "../../types/Product";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Pagination from "@mui/material/Pagination";
+import CancelIcon from "@mui/icons-material/Cancel";
+
 import styles from "./ProductTable.module.css";
-import { formatCurrency } from "../../utils/format";
+
+import {
+    useProductContext
+} from "../../context/ProductContext";
+
+import {
+    usePagination
+} from "../../hooks/usePagination";
+
+import ProductTableRow from "./ProductTableRow";
+import EditProduct from "./EditProduct";
+
+import {
+    Product
+} from "../../types/Product";
 
 const DEFAULT_ROWS_PER_PAGE = 10;
-
-const getRowBgColor = (expirationDate: string | null | undefined) => {
-    if (!expirationDate) return "inherit";
-
-    const today = dayjs();
-    const expiration = dayjs(expirationDate);
-    const diff = expiration.diff(today, "day");
-
-    if (diff < 7) {
-        return "#F6D4D2";
-    }
-    if (diff < 15) {
-        return "#FFFFBF";
-    }
-    if (diff >= 15) {
-        return "#E4FAE4";
-    }
-}
-
-const getStockCellColor = (stock: number) => {
-    if (stock > 10) {
-        return "white";
-    }
-    if (stock >= 5) {
-        return "#FFB343";
-    }
-    if (stock < 5) {
-        return "#ffb09c";
-    }
-};
+const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 
 const ProductTable = () => {
-    const { products, total, fetchProducts, deleteProduct, setProductInStock, setProductOutOfStock } = useProductContext();
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+    const { products, total, fetchProducts, deleteProduct, setProductInStock, setProductOutOfStock, lastFilters } = useProductContext();
+    const { page, setPage, rowsPerPage, onRowsPerPageChange, pageCount, rowsPerPageOptions } = usePagination({ total, initialRowsPerPage: DEFAULT_ROWS_PER_PAGE, rowsPerPageOptions: ROWS_PER_PAGE_OPTIONS });
     const [editOpen, setEditOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -86,62 +68,55 @@ const ProductTable = () => {
 
     const [successAlert, setSuccessAlert] = useState(false);
 
-    useEffect(() => {
-        const params: any = {
-            page,
-            size: rowsPerPage,
-        };
+    const params = useMemo(() => {
+        const p: any = { ...lastFilters, page, size: rowsPerPage };
         if (primarySortBy) {
-            params.primarySortBy = primarySortBy;
-            params.primarySortDirection = primarySortDirection;
+            p.primarySortBy = primarySortBy;
+            p.primarySortDirection = primarySortDirection;
         }
         if (secondarySortBy && primarySortBy) {
-            params.secondarySortBy = secondarySortBy;
-            params.secondarySortDirection = secondarySortDirection;
+            p.secondarySortBy = secondarySortBy;
+            p.secondarySortDirection = secondarySortDirection;
         }
+        return p;
+    }, [lastFilters, page, rowsPerPage, primarySortBy, primarySortDirection, secondarySortBy, secondarySortDirection]);
+
+    const lastParamsRef = useRef<string | null>(null);
+    useEffect(() => {
+        const signature = JSON.stringify(params);
+        if (lastParamsRef.current === signature) {
+            return;
+        }
+        lastParamsRef.current = signature;
         fetchProducts(params);
-    }, [page, rowsPerPage, primarySortBy, primarySortDirection, secondarySortBy, secondarySortDirection, fetchProducts]);
+    }, [params, fetchProducts]);
 
-    const handleChangeRowsPerPage = (event: any) => {
-        setRowsPerPage(Number(event.target.value));
-        setPage(0);
-    };
-
-    const handleEdit = (product: Product) => {
+    const handleEdit = useCallback((product: Product) => {
         setSelectedProduct(product);
         setEditOpen(true);
-    };
+    }, []);
 
-    const handleDeleteClick = (product: Product) => {
+    const handleDeleteClick = useCallback((product: Product) => {
         setProductToDelete(product);
         setDeleteDialogOpen(true);
-    };
+    }, []);
 
-    const handleDeleteConfirm = async () => {
+    const handleDeleteConfirm = useCallback(async () => {
         if (productToDelete) {
             await deleteProduct(productToDelete.id);
-            const params: any = { page, size: rowsPerPage };
-            if (primarySortBy) {
-                params.primarySortBy = primarySortBy;
-                params.primarySortDirection = primarySortDirection;
-            }
-            if (secondarySortBy && primarySortBy) {
-                params.secondarySortBy = secondarySortBy;
-                params.secondarySortDirection = secondarySortDirection;
-            }
             fetchProducts(params);
             setSuccessAlert(true);
         }
         setDeleteDialogOpen(false);
         setProductToDelete(null);
-    };
+    }, [productToDelete, deleteProduct, fetchProducts, params]);
 
-    const handleDeleteCancel = () => {
+    const handleDeleteCancel = useCallback(() => {
         setDeleteDialogOpen(false);
         setProductToDelete(null);
-    };
+    }, []);
 
-    const handleSort = (column: string) => {
+    const handleSort = useCallback((column: string) => {
         if (primarySortBy === column) {
             setPrimaryDirection(primarySortDirection === "asc" ? "desc" : "asc");
             if (primarySortDirection === "desc") {
@@ -166,7 +141,7 @@ const ProductTable = () => {
                 setSecondarySortDirection("asc");
             }
         }
-    };
+    }, [primarySortBy, primarySortDirection, secondarySortBy, secondarySortDirection]);
 
     const columns = [
         { id: "category", label: "Category" },
@@ -180,7 +155,7 @@ const ProductTable = () => {
         <>
             <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
                 <Table stickyHeader className={styles.productTable}>
-                    <TableHead>
+                    <TableHead aria-label="Products table header">
                         <TableRow>
                             <TableCell align="center" colSpan={7} sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>
                                 Products
@@ -217,6 +192,7 @@ const ProductTable = () => {
                                                 } : {}
                                             }
                                             onClick={() => handleSort(columnId)}
+                                            aria-label={`Sort by ${column.label}`}
                                         >
                                             {column.label}
                                         </TableSortLabel>
@@ -227,90 +203,16 @@ const ProductTable = () => {
                             <TableCell className={styles.headerCell}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody>
-                        {products.map((product) => {
-                            const isOutOfStock = product.stock === 0;
-                            const rowBgColor = getRowBgColor(product.expirationDate ?? null);
-                            const stockCellColor = getStockCellColor(product.stock);
-
-                            return (
-                                <TableRow
-                                    key={product.id}
-                                    sx={{
-                                        backgroundColor: rowBgColor,
-                                    }}>
-                                    <TableCell>
-                                        <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
-                                            {product.category.name}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
-                                            {product.name}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
-                                            {formatCurrency(product.price)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span style={isOutOfStock ? { textDecoration: "line-through" } : {}}>
-                                            {product.expirationDate || "N/A"}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span
-                                            style={{
-                                                display: "inline-block",
-                                                padding: "5px 10px",
-                                                borderRadius: "5px",
-                                                ...isOutOfStock ? { textDecoration: "line-through" } : {},
-                                                backgroundColor: stockCellColor,
-                                                color: "black",
-                                            }}
-                                        >
-                                            {product.stock}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Tooltip title={product.stock === 0 ? "Restore Default Stock" : "Set Out of Stock"}>
-                                            <IconButton
-                                                size="small"
-                                                color={product.stock === 0 ? "success" : "warning"}
-                                                onClick={() =>
-                                                    product.stock === 0
-                                                        ? setProductInStock(product.id)
-                                                        : setProductOutOfStock(product.id)
-                                                }
-                                            >
-                                                {product.stock === 0 ? <CheckCircleIcon /> : <RemoveCircleIcon />}
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            size="small"
-                                            variant="contained"
-                                            sx={{ mr: 1 }}
-                                            startIcon={<EditIcon />}
-                                            onClick={() => handleEdit(product)}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            size="small"
-                                            variant="contained"
-                                            color="error"
-                                            startIcon={<DeleteIcon />}
-                                            onClick={() => handleDeleteClick(product)}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                    <TableBody role="rowgroup">
+                        {products.map((product) => (
+                            <ProductTableRow
+                                key={product.id}
+                                product={product}
+                                onEdit={handleEdit}
+                                onDelete={handleDeleteClick}
+                                onToggleStock={(p) => p.stock === 0 ? setProductInStock(p.id) : setProductOutOfStock(p.id)}
+                            />
+                        ))}
                     </TableBody>
                 </Table>
                 <Box
@@ -327,7 +229,8 @@ const ProductTable = () => {
 
                     <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
                         <Pagination
-                            count={Math.ceil(total / rowsPerPage)}
+                            aria-label="Products pagination"
+                            count={pageCount}
                             page={page + 1}
                             onChange={(_e, value) => setPage(value - 1)}
                             color="primary"
@@ -347,9 +250,10 @@ const ProductTable = () => {
                                 labelId="rows-per-page-label"
                                 value={rowsPerPage}
                                 label="Rows per page"
-                                onChange={handleChangeRowsPerPage}
+                                onChange={onRowsPerPageChange}
+                                aria-label="Rows per page"
                             >
-                                {[5, 10, 25, 50].map((size) => (
+                                {rowsPerPageOptions.map((size) => (
                                     <MenuItem key={size} value={size}>
                                         {size}
                                     </MenuItem>

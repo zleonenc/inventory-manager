@@ -18,10 +18,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.inventory.dto.ProductDTO;
+import com.example.inventory.exception.NotFoundException;
+import static com.example.inventory.testutil.builders.ProductBuilder.aProduct;
+import static com.example.inventory.testutil.builders.ProductDTOBuilder.aProductDTO;
+import static com.example.inventory.testutil.builders.CategoryBuilder.aCategory;
+import com.example.inventory.repository.ProductRepository;
 import com.example.inventory.model.Category;
 import com.example.inventory.model.Product;
-import com.example.inventory.repository.ProductRepository;
+import com.example.inventory.dto.ProductDTO;
 
 class ProductServiceTest {
     private ProductRepository repository;
@@ -38,11 +42,10 @@ class ProductServiceTest {
 
     @Test
     void saveFromDTO_validProduct_savesAndReturnsProduct() {
-        Category category = new Category(1L, "Category A");
-
-        ProductDTO dto = new ProductDTO("Product A", 10.0, 10, 1L, LocalDate.now());
-        Product saved = new Product("Product A", category, 10.0, 10, dto.getExpirationDate());
-        saved.setId(1L);
+        Category category = aCategory().build();
+        LocalDate date = LocalDate.of(2025, 1, 1);
+        ProductDTO dto = aProductDTO().expiringOn(date).build();
+        Product saved = aProduct().withId(1L).expiringOn(date).build();
 
         when(categoryService.getCategoryById(1L)).thenReturn(Optional.of(category));
         when(repository.save(any(Product.class))).thenReturn(saved);
@@ -54,15 +57,15 @@ class ProductServiceTest {
         assertEquals(1L, result.getId());
         assertEquals(10.0, result.getPrice());
         assertEquals(10, result.getStock());
-        assertEquals(LocalDate.now(), result.getExpirationDate());
+        assertEquals(date, result.getExpirationDate());
         assertTrue(result.isActive());
         verify(repository).save(any(Product.class));
     }
 
     @Test
     void saveFromDTO_invalidCategory_throwsException() {
-        ProductDTO dto = new ProductDTO("Product A1", 10.0, 10.0, 1L, LocalDate.now());
-        when(categoryService.getCategoryById(1000L)).thenReturn(Optional.empty());
+        ProductDTO dto = aProductDTO().build();
+        when(categoryService.getCategoryById(1L)).thenReturn(Optional.empty());
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> service.saveFromDTO(dto));
         assertEquals("Invalid category ID", ex.getMessage());
@@ -70,24 +73,17 @@ class ProductServiceTest {
 
     @Test
     void getFilteredSortedProducts_returnsOnlyActive() {
-        Category category = new Category(1L, "Category A");
-        Product active = new Product(1L, "Product A", category, 10.0, 10, LocalDate.now());
-        Product inactive = new Product(2L, "Product B", category, 10.0, 10, LocalDate.now());
-        inactive.setActive(false);
+        Product active = aProduct().withId(1L).build();
+        Product inactive = aProduct().withId(2L).inactive().build();
 
         when(repository.getAll()).thenReturn(List.of(active, inactive));
 
-        List<Product> result = service.getFilteredSortedProducts(
-            null, // name
-            null, // categories
-            null, // available
-            0, // page
-            10, // size
-            null, // primarySortBy
-            null, // primarySortDirection
-            null, // secondarySortBy
-            null // secondarySortDirection
-        ).getContent();
+        List<Product> result = com.example.inventory.testutil.ProductQueryParams
+                .defaults()
+                .page(0)
+                .size(10)
+                .execute(service)
+                .getContent();
         assertEquals(1, result.size());
         assertTrue(result.get(0).isActive());
         assertEquals("Product A", result.get(0).getName());
@@ -95,7 +91,7 @@ class ProductServiceTest {
 
     @Test
     void getProductById_activeProduct_returnsProduct() {
-        Product product = new Product(1L, "Product A", new Category(1L, "Category A"), 10.0, 10, LocalDate.now());
+        Product product = aProduct().withId(1L).build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -108,8 +104,7 @@ class ProductServiceTest {
 
     @Test
     void getProductById_inactiveProduct_returnsEmpty() {
-        Product product = new Product(1L, "Product A", new Category(1L, "Category A"), 10.0, 10, LocalDate.now());
-        product.setActive(false);
+        Product product = aProduct().withId(1L).inactive().build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -119,50 +114,41 @@ class ProductServiceTest {
 
     @Test
     void deleteProductById_foundActive_setsInactiveAndSaves() {
-        Product product = new Product("Product A", new Category(1L, "Category A"), 10.0, 10, LocalDate.now());
+        Product product = aProduct().withId(1L).build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
         service.deleteProductById(1L);
 
         assertFalse(product.isActive());
-        repository.updateById(eq(1L), eq(product));
+        verify(repository).updateById(eq(1L), eq(product));
     }
 
     @Test
     void deleteProductById_notFound_throwsException() {
         when(repository.findById(1000L)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> service.deleteProductById(1000L));
+        Exception ex = assertThrows(NotFoundException.class, () -> service.deleteProductById(1000L));
         assertEquals("Product not found with ID: 1000", ex.getMessage());
     }
 
     @Test
     void deleteProductById_inactive_throwsException() {
-        Product product = new Product();
-        product.setId(1L);
-        product.setActive(false);
+        Product product = aProduct().withId(1L).inactive().build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> service.deleteProductById(1L));
+        Exception ex = assertThrows(NotFoundException.class, () -> service.deleteProductById(1L));
         assertEquals("Product not found with ID: 1", ex.getMessage());
     }
 
     @Test
     void updateProductById_valid_updatesAndReturnsProduct() {
-        Product existing = new Product();
-        existing.setId(1L);
-        existing.setActive(true);
-        existing.setName("Existing Product");
-
-        Category category = new Category();
-        category.setId(2L);
-
-        ProductDTO dto = new ProductDTO("Updated", 10.0, 10, 1L, LocalDate.now());
-
-        Product updated = new Product("Updated", category, 10.0, 10, dto.getExpirationDate());
-        updated.setId(1L);
+        Product existing = aProduct().withId(1L).build();
+        Category category = aCategory().withId(2L).build();
+        LocalDate date = LocalDate.of(2025, 2, 2);
+        ProductDTO dto = aProductDTO().withName("Updated").expiringOn(date).build();
+        Product updated = aProduct().withId(1L).withName("Updated").expiringOn(date).build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(existing));
         when(categoryService.getCategoryById(1L)).thenReturn(Optional.of(category));
@@ -174,29 +160,26 @@ class ProductServiceTest {
         assertEquals(1L, result.getId());
         assertEquals(10.0, result.getPrice());
         assertEquals(10, result.getStock());
-        assertEquals(LocalDate.now(), result.getExpirationDate());
+        assertEquals(date, result.getExpirationDate());
         verify(repository).updateById(eq(1L), any(Product.class));
     }
 
     @Test
     void updateProductById_notFound_throwsException() {
-        ProductDTO dto = new ProductDTO("Updated", 10.0, 10.0, 1L, LocalDate.now());
+        ProductDTO dto = aProductDTO().build();
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> service.updateProductById(1L, dto));
+        Exception ex = assertThrows(NotFoundException.class, () -> service.updateProductById(1L, dto));
         assertEquals("Product not found with ID: 1", ex.getMessage());
     }
 
     @Test
     void updateProductById_invalidCategory_throwsException() {
-        Product existing = new Product();
-        existing.setId(1L);
-        existing.setActive(true);
-
-        ProductDTO dto = new ProductDTO("Updated", 10.0, 10.0, 1L, LocalDate.now());
+        Product existing = aProduct().withId(1L).build();
+        ProductDTO dto = aProductDTO().build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(existing));
-        when(categoryService.getCategoryById(2L)).thenReturn(Optional.empty());
+        when(categoryService.getCategoryById(1L)).thenReturn(Optional.empty());
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> service.updateProductById(1L, dto));
         assertEquals("Invalid category ID", ex.getMessage());
@@ -204,10 +187,7 @@ class ProductServiceTest {
 
     @Test
     void markProductAsOutOfStock_setsStockToZeroAndSaves() {
-        Product product = new Product();
-        product.setId(1L);
-        product.setActive(true);
-        product.setStock(10);
+        Product product = aProduct().withId(1L).build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -221,16 +201,13 @@ class ProductServiceTest {
     void markProductAsOutOfStock_notFound_throwsException() {
         when(repository.findById(1000L)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> service.markProductAsOutOfStock(1000L));
+        Exception ex = assertThrows(NotFoundException.class, () -> service.markProductAsOutOfStock(1000L));
         assertEquals("Product not found with ID: 1000", ex.getMessage());
     }
 
     @Test
     void markProductAsInStock_setsStockToOneAndSaves() {
-        Product product = new Product();
-        product.setId(1L);
-        product.setActive(true);
-        product.setStock(0);
+        Product product = aProduct().withId(1L).withStock(0).build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -244,7 +221,7 @@ class ProductServiceTest {
     void markProductAsInStock_notFound_throwsException() {
         when(repository.findById(1000L)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> service.markProductAsInStock(1000L));
+        Exception ex = assertThrows(NotFoundException.class, () -> service.markProductAsInStock(1000L));
         assertEquals("Product not found with ID: 1000", ex.getMessage());
     }
 }
