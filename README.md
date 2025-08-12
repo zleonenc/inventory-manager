@@ -159,9 +159,3 @@ inventory-manager/
 
 - If CORS blocks requests, update `app.cors.allowed-origins` in the backend to match your frontend origin.
 - Swagger UI shows the effective request/response models and helps verify query parameters.
-
----
-
-## License
-
-Educational/breakable toy project. Use at your own discretion.
