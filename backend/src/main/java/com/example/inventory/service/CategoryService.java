@@ -15,11 +15,18 @@ import com.example.inventory.model.Category;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryService(final CategoryRepository repository) {
+        this.categoryRepository = repository;
     }
 
-    public Category saveCategory(Category category) {
+    /**
+     * Saves a new category to the repository.
+     *
+     * @param category the category to save
+     * @return the saved category
+     * @throws IllegalArgumentException if a category with the same name already exists
+     */
+    public Category saveCategory(final Category category) {
         if (categoryRepository.getAll().stream().filter(cat -> cat.isActive())
                 .anyMatch(existingCategory -> existingCategory.getName().equalsIgnoreCase(category.getName()))) {
             throw new IllegalArgumentException(DUPLICATE_CATEGORY_NAME);
@@ -29,22 +36,47 @@ public class CategoryService {
         return savedCategory;
     }
 
+    /**
+     * Retrieves all active categories from the repository.
+     *
+     * @return list of all active categories
+     */
     public List<Category> getAllActiveCategories() {
         return categoryRepository.getAll().stream()
                 .filter(Category::isActive)
                 .toList();
     }
 
+    /**
+     * Retrieves all categories (both active and inactive) from the repository.
+     *
+     * @return list of all categories
+     */
     public List<Category> getAllCategories() {
         return categoryRepository.getAll();
     }
 
-    public Optional<Category> getCategoryById(Long id) {
+    /**
+     * Retrieves an active category by its ID.
+     *
+     * @param id the ID of the category to retrieve
+     * @return optional containing the category if found and active, empty otherwise
+     */
+    public Optional<Category> getCategoryById(final Long id) {
         return categoryRepository.findById(id)
                 .filter(Category::isActive);
     }
 
-    public Category updateCategoryById(Long id, Category category) {
+    /**
+     * Updates an existing category by ID.
+     *
+     * @param id the ID of the category to update
+     * @param category the updated category data
+     * @return the updated category
+     * @throws NotFoundException if the category is not found or inactive
+     * @throws IllegalArgumentException if a category with the same name already exists
+     */
+    public Category updateCategoryById(final Long id, final Category category) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format(CATEGORY_NOT_FOUND, id)));
 
@@ -65,7 +97,13 @@ public class CategoryService {
         return updatedCategory;
     }
 
-    public void deleteCategoryById(Long id) {
+    /**
+     * Deletes a category by marking it as inactive (soft delete).
+     *
+     * @param id the ID of the category to delete
+     * @throws NotFoundException if the category is not found or already inactive
+     */
+    public void deleteCategoryById(final Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format(CATEGORY_NOT_FOUND, id)));
 
@@ -78,6 +116,9 @@ public class CategoryService {
         }
     }
 
+    /**
+     * Clears all categories from the repository.
+     */
     public void clearCategories() {
         categoryRepository.clear();
     }

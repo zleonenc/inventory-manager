@@ -16,7 +16,13 @@ public class CategoryFileStorageService {
     private final ObjectMapper objectMapper = new JacksonConfig().objectMapper();
     private final Path filePath = Paths.get("./src/main/resources/categories.json");
 
-    public void saveCategories(List<Category> categories) {
+    /**
+     * Saves a list of categories to the JSON file.
+     *
+     * @param categories the list of categories to save
+     * @throws RuntimeException if saving to file fails
+     */
+    public void saveCategories(final List<Category> categories) {
         try {
             objectMapper.writeValue(filePath.toFile(), categories);
         } catch (IOException e) {
@@ -24,6 +30,12 @@ public class CategoryFileStorageService {
         }
     }
 
+    /**
+     * Loads categories from the JSON file.
+     *
+     * @return list of categories loaded from file, or empty list if file doesn't exist
+     * @throws RuntimeException if loading from file fails
+     */
     public List<Category> loadCategories() {
         try {
             if (filePath.toFile().exists()) {
@@ -37,6 +49,11 @@ public class CategoryFileStorageService {
         }
     }
 
+    /**
+     * Clears the categories file by deleting it.
+     *
+     * @throws RuntimeException if clearing the file fails
+     */
     public void clear() {
         try {
             if (filePath.toFile().exists()) {

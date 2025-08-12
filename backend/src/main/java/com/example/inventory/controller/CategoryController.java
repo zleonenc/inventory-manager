@@ -32,55 +32,90 @@ import com.example.inventory.model.Category;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public CategoryController(final CategoryService service) {
+        this.categoryService = service;
     }
 
-    // Create a category: POST
+    /**
+     * Creates a new category.
+     *
+     * @param category the category to create
+     * @return the created category wrapped in ResponseEntity
+     */
     @PostMapping()
     @Operation(summary = "Create a new category")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Category created"),
-            @ApiResponse(responseCode = "400", description = "Invalid category payload", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "400", 
+                description = "Invalid category payload", 
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) {
+    public ResponseEntity<Category> createCategory(
+            @Valid @RequestBody final Category category) {
         Category saved = categoryService.saveCategory(category);
         return ResponseEntity.ok(saved);
     }
 
-    // Get all active categories: GET
+    /**
+     * Retrieves all active categories.
+     *
+     * @return list of all active categories wrapped in ResponseEntity
+     */
     @GetMapping
     @Operation(summary = "Get all active categories")
     public ResponseEntity<List<Category>> getAllActiveCategories() {
         return ResponseEntity.ok(categoryService.getAllActiveCategories());
     }
 
-    // Update a category: PUT
+    /**
+     * Updates an existing category by ID.
+     *
+     * @param id the ID of the category to update
+     * @param category the updated category data
+     * @return the updated category wrapped in ResponseEntity
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Update a category by id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated"),
-            @ApiResponse(responseCode = "400", description = "Invalid category payload", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "Category not found", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "400", 
+                description = "Invalid category payload", 
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", 
+                description = "Category not found", 
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @Valid @RequestBody Category category) {
+    public ResponseEntity<Category> updateCategory(
+            @PathVariable final Long id, 
+            @Valid @RequestBody final Category category) {
         Category updatedCategory = categoryService.updateCategoryById(id, category);
         return ResponseEntity.ok(updatedCategory);
     }
 
-    // Mark a category as inactive: DELETE
+    /**
+     * Deletes a category by marking it as inactive.
+     *
+     * @param id the ID of the category to delete
+     * @return empty ResponseEntity with no content status
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete (mark inactive) a category by id")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Deleted"),
-            @ApiResponse(responseCode = "404", description = "Category not found", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "404", 
+                description = "Category not found", 
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable final Long id) {
         categoryService.deleteCategoryById(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Clear all categories: DELETE
+    /**
+     * Clears all categories from the system.
+     *
+     * @return empty ResponseEntity with no content status
+     */
     @DeleteMapping("/clear")
     @Operation(summary = "Delete all categories")
     public ResponseEntity<Void> clearCategories() {

@@ -14,10 +14,15 @@ import com.example.inventory.model.Product;
 public class InventoryMetricsService {
     private final ProductService productService;
 
-    public InventoryMetricsService(ProductService productService) {
-        this.productService = productService;
+    public InventoryMetricsService(final ProductService service) {
+        this.productService = service;
     }
 
+    /**
+     * Calculates and retrieves inventory metrics grouped by category and overall.
+     *
+     * @return list of inventory metrics including category-specific and overall metrics
+     */
     public List<InventoryMetricsDTO> getInventoryMetrics() {
         List<Product> allProducts = productService.getAllProducts().stream()
                 .filter(p -> p.getStock() > 0)
@@ -46,8 +51,8 @@ public class InventoryMetricsService {
                     .average()
                     .orElse(0.0);
 
-            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, totalStock, totalValue,
-                    averagePrice);
+            InventoryMetricsDTO metric = new InventoryMetricsDTO(categoryId, categoryName, 
+                totalStock, totalValue, averagePrice);
             metrics.add(metric);
         }
 
@@ -63,9 +68,8 @@ public class InventoryMetricsService {
                 .average()
                 .orElse(0.0);
 
-        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L, "Overall", overallTotalStock,
-                overallTotalValue,
-                overallAveragePrice);
+        InventoryMetricsDTO overallMetrics = new InventoryMetricsDTO(0L, "Overall", 
+            overallTotalStock, overallTotalValue, overallAveragePrice);
 
         metrics.add(overallMetrics);
 
